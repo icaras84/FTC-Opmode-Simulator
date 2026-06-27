@@ -2,12 +2,12 @@ package org.jjophoven.fakehardware;
 
 import org.firstinspires.ftc.robotcore.external.Func;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.jjophoven.simulator.DriverStation;
+import org.jjophoven.simulator.DriverStationSimulator;
 
 public class FakeTelemetry implements Telemetry {
-    private final DriverStation driverStation;
+    private final DriverStationSimulator driverStation;
 
-    public FakeTelemetry(DriverStation driverStation) {
+    public FakeTelemetry(DriverStationSimulator driverStation) {
         this.driverStation = driverStation;
     }
 

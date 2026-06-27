@@ -33,18 +33,17 @@ public class FakeDriverStationClient extends JFrame {
     private JLabel connectionLabel;
     private JButton mainButton;
     private JButton stopButton;
+    private JComboBox<OpModeInfo> opModeCombo;
+    private JPanel bottomBar;
 
     private Timer swingTimer;
     private long timerStartMs;
 
-    private java.util.List<String> opModes;
-
     private final DriverStationConnection connection;
 
-    public FakeDriverStationClient(int port, java.util.List<String> opModes) {
+    public FakeDriverStationClient(int port) {
         super("FTC Driver Station");
 
-        this.opModes = opModes;
         initUI();
 
         connection = new DriverStationConnection(
@@ -59,6 +58,38 @@ public class FakeDriverStationClient extends JFrame {
                     connectionLabel.setForeground(ACCENT_RED);
                     dispose();
                     System.exit(0);
+                },
+                // opmode list callback: populate combo box when server sends available opmodes
+                (opmodeList) -> {
+                    if (opmodeList == null) return;
+                    SwingUtilities.invokeLater(() -> {
+                        DefaultComboBoxModel<OpModeInfo> model = new DefaultComboBoxModel<>();
+                        for (OpModeInfo info : opmodeList.opmodes) {
+                            model.addElement(info);
+                        }
+                        if (opModeCombo == null) {
+                            opModeCombo = new JComboBox<>(model);
+                            opModeCombo.setMaximumSize(new Dimension(240, 28));
+                            opModeCombo.setBackground(BG_PANEL);
+                            opModeCombo.setForeground(TEXT_PRIMARY);
+                            opModeCombo.addActionListener(e -> {
+                                OpModeInfo sel = (OpModeInfo) opModeCombo.getSelectedItem();
+                                if (sel != null) opModeLabel.setText(sel.toString());
+                            });
+                            if (bottomBar != null) {
+                                bottomBar.removeAll();
+                                bottomBar.add(opModeCombo);
+                                bottomBar.revalidate();
+                                bottomBar.repaint();
+                            }
+                        } else {
+                            opModeCombo.setModel(model);
+                        }
+                        if (opModeCombo.getItemCount() > 0) {
+                            opModeCombo.setSelectedIndex(0);
+                            opModeLabel.setText(((OpModeInfo) opModeCombo.getSelectedItem()).toString());
+                        }
+                    });
                 }
         );
     }
@@ -230,10 +261,21 @@ public class FakeDriverStationClient extends JFrame {
     }
 
     private JPanel buildBottomBar() {
-        JPanel bar = new JPanel(new FlowLayout(FlowLayout.CENTER, 16, 4));
-        bar.setBackground(BG_PANEL);
-        bar.setBorder(new MatteBorder(1, 0, 0, 0, BORDER_COLOR));
-        return bar;
+        if (bottomBar == null) {
+            bottomBar = new JPanel(new FlowLayout(FlowLayout.CENTER, 16, 4));
+            bottomBar.setBackground(BG_PANEL);
+            bottomBar.setBorder(new MatteBorder(1, 0, 0, 0, BORDER_COLOR));
+
+            // add opmode combo if already available
+            if (opModeCombo != null) {
+                bottomBar.add(opModeCombo);
+            }
+
+            // Add key hints
+            bottomBar.add(keyHint("Esc", "Stop"));
+        }
+
+        return bottomBar;
     }
 
     private JLabel keyHint(String key, String desc) {
@@ -258,7 +300,7 @@ public class FakeDriverStationClient extends JFrame {
     }
 
     private void onStop() {
-        transitionTo(OpModeState.STOPPED);
+        transitionTo(OpModeState.WAIT_FOR_INIT);
     }
 
     private void transitionTo(OpModeState next) {
@@ -270,7 +312,16 @@ public class FakeDriverStationClient extends JFrame {
                     statusLabel.setBackground(ACCENT_BLUE);
                     mainButton.setText("START");
                     stopButton.setEnabled(true);
-                    opModeLabel.setText("TeleOp");
+                    // if an opmode was selected, display and send it to the server
+                    if (opModeCombo != null && opModeCombo.getItemCount() > 0) {
+                        OpModeInfo sel = (OpModeInfo) opModeCombo.getSelectedItem();
+                        if (sel != null) {
+                            opModeLabel.setText(sel.toString());
+                            connection.sendSelectedOpMode(sel);
+                        }
+                    } else {
+                        opModeLabel.setText("TeleOp");
+                    }
                     timerLabel.setText("0:00");
                     break;
 
@@ -283,7 +334,7 @@ public class FakeDriverStationClient extends JFrame {
                     startTimer();
                     break;
 
-                case STOPPED:
+                case WAIT_FOR_INIT:
                     statusLabel.setText("STOPPED");
                     statusLabel.setBackground(TEXT_MUTED);
                     mainButton.setText("INIT");
@@ -357,6 +408,6 @@ public class FakeDriverStationClient extends JFrame {
 
         java.util.List<String> opModes = Arrays.asList(args);
 
-        SwingUtilities.invokeLater(() -> new FakeDriverStationClient(port, opModes));
+        SwingUtilities.invokeLater(() -> new FakeDriverStationClient(port));
     }
 }

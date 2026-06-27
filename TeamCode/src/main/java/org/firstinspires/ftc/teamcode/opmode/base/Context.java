@@ -26,7 +26,7 @@ public final class Context {
                     opModeTelemetry,
                     FtcDashboard.getInstance().getTelemetry()
             );
-        } catch (ExceptionInInitializerError | RuntimeException error) {
+        } catch (Exception | ExceptionInInitializerError | NoClassDefFoundError error) {
             return opModeTelemetry;
         }
     }

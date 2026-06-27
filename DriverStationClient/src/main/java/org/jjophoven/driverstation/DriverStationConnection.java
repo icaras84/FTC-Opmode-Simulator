@@ -5,6 +5,9 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
@@ -12,25 +15,31 @@ public class DriverStationConnection {
     public static final byte INPUT_TELEMETRY = 1;
     public static final byte KEY_PACKET = 1;
     public static final byte STATE_PACKET = 2;
+    public static final byte OPMODE_PACKET = 3;
 
     private final Consumer<String> telemetryConsumer;
     private final Runnable connectedCallback;
     private final Runnable disconnectedCallback;
+    private final Consumer<OpModeList> opModeListCallback;
 
     private DataInputStream input;
     private DataOutputStream output;
     private Socket socket;
     private final AtomicBoolean running = new AtomicBoolean(true);
 
+    protected OpModeList opmodes;
+
     public DriverStationConnection(
             int port,
             Consumer<String> telemetryConsumer,
             Runnable connectedCallback,
-            Runnable disconnectedCallback
+            Runnable disconnectedCallback,
+            Consumer<OpModeList> opModeListCallback
     ) {
         this.telemetryConsumer = telemetryConsumer;
         this.connectedCallback = connectedCallback;
         this.disconnectedCallback = disconnectedCallback;
+        this.opModeListCallback = opModeListCallback;
 
         new Thread(() -> connect(port)).start();
     }
@@ -57,6 +66,12 @@ public class DriverStationConnection {
                     String telemetry = input.readUTF();
                     SwingUtilities.invokeLater(() -> telemetryConsumer.accept(telemetry));
                 }
+                if (type == OPMODE_PACKET) {
+                    opmodes = OpModeList.read(input);
+                    if (opModeListCallback != null) {
+                        SwingUtilities.invokeLater(() -> opModeListCallback.accept(opmodes));
+                    }
+                }
             }
         } catch (IOException ignored) {
             close();
@@ -76,6 +91,14 @@ public class DriverStationConnection {
         safe(() -> {
             output.writeByte(STATE_PACKET);
             output.writeByte(state.ordinal());
+            output.flush();
+        });
+    }
+
+    public void sendSelectedOpMode(OpModeInfo opmode) {
+        safe(() -> {
+            output.writeByte(OPMODE_PACKET);
+            opmode.write(output);
             output.flush();
         });
     }

@@ -2,6 +2,7 @@ package org.jjophoven.simulator;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.Gamepad;
+import org.jjophoven.driverstation.OpModeInfo;
 import org.jjophoven.driverstation.OpModeState;
 import org.jjophoven.fakehardware.FakeHardwareMap;
 import org.jjophoven.fakehardware.FakeTelemetry;
@@ -13,7 +14,9 @@ import java.net.Socket;
 import java.util.HashSet;
 import java.util.Set;
 
-public class DriverStation {
+import static org.jjophoven.driverstation.DriverStationConnection.OPMODE_PACKET;
+
+public class DriverStationSimulator {
     private static final int PORT = 8080;
     private static final int SOCKET_TIMEOUT_MS = 30000;
 
@@ -32,17 +35,43 @@ public class DriverStation {
     Keybinds gamepad1Keybinds;
     Keybinds gamepad2Keybinds;
 
-    public DriverStation(OpMode opMode, Keybinds gamepad1, Keybinds gamepad2) {
-        opMode.telemetry = new FakeTelemetry(this);
-
-        this.opMode = opMode;
-
-        fakeHardwareMap = new FakeHardwareMap();
-        opMode.hardwareMap = fakeHardwareMap;
+    public DriverStationSimulator(Keybinds gamepad1, Keybinds gamepad2) throws IOException, InterruptedException {
         this.gamepad1Keybinds = gamepad1;
         this.gamepad2Keybinds = gamepad2;
-        opMode.gamepad1 = new Gamepad();
-        opMode.gamepad2 = new Gamepad();
+
+        startServer();
+        acceptClient();
+
+        while (process.isAlive()) {
+            System.out.println("Waiting for next opmode...");
+
+            while (state == OpModeState.WAIT_FOR_INIT) {
+                poll();
+                Thread.sleep(20);
+            }
+
+            opMode.init();
+
+            while (state == OpModeState.INITIALIZING) {
+                update();
+
+                opMode.init_loop();
+
+                Thread.sleep(20);
+            }
+
+            opMode.start();
+
+            while (state == OpModeState.RUNNING) {
+                update();
+
+                opMode.loop();
+
+                Thread.sleep(20);
+            }
+
+            opMode.stop();
+        }
     }
 
     public void startServer() throws IOException {
@@ -63,6 +92,9 @@ public class DriverStation {
 
                 in = new DataInputStream(clientSocket.getInputStream());
                 out = new DataOutputStream(clientSocket.getOutputStream());
+
+                OpModeRegister register = new OpModeRegister();
+                register.writeOpmodes(out);
 
                 clientConnected = true;
 
@@ -112,6 +144,19 @@ public class DriverStation {
                     case STATE_PACKET:
                         this.state = OpModeState.values()[in.readByte()];
                         break;
+                    case OPMODE_PACKET:
+                        OpModeRegister register = new OpModeRegister();
+                        OpModeInfo opModeInfo = OpModeInfo.read(in);
+                        opMode = register.getOpMode(opModeInfo.name, opModeInfo.group);
+
+                        opMode.telemetry = new FakeTelemetry(this);
+
+                        fakeHardwareMap = new FakeHardwareMap();
+                        opMode.hardwareMap = fakeHardwareMap;
+                        opMode.gamepad1 = new Gamepad();
+                        opMode.gamepad2 = new Gamepad();
+
+                        break;
                 }
             }
         } catch (IOException e) {
@@ -151,6 +196,7 @@ public class DriverStation {
             process.destroy();
         }
 
+//        state = OpModeState.STOPPED;
         state = OpModeState.STOPPED;
 
         log("Driver Station shutdown.");

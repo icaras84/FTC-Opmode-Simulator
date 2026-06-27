@@ -4,14 +4,17 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import org.jjophoven.driverstation.OpModeInfo;
+import org.jjophoven.driverstation.OpModeList;
 
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.util.Enumeration;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+
+import static org.jjophoven.driverstation.DriverStationConnection.OPMODE_PACKET;
 
 public class OpModeRegister {
     Set<OpMode> autos = new LinkedHashSet<>();
@@ -19,6 +22,88 @@ public class OpModeRegister {
 
     public OpModeRegister() {
         findAnnotatedOpModes();
+    }
+
+    public String getOpModeName(OpMode opMode) {
+        if (opMode.getClass().isAnnotationPresent(TeleOp.class)) {
+            TeleOp annotation = opMode.getClass().getAnnotation(TeleOp.class);
+            assert annotation != null;
+            String name = annotation.name();
+            if (name.isEmpty()) name = opMode.getClass().getSimpleName();
+            return name;
+        }
+        if (opMode.getClass().isAnnotationPresent(Autonomous.class)) {
+            Autonomous annotation = opMode.getClass().getAnnotation(Autonomous.class);
+            assert annotation != null;
+            String name = annotation.name();
+            if (name.isEmpty()) name = opMode.getClass().getSimpleName();
+            return name;
+        }
+        return null;
+    }
+
+    public String getOpModeGroup(OpMode opMode) {
+        if (opMode.getClass().isAnnotationPresent(TeleOp.class)) {
+            TeleOp annotation = opMode.getClass().getAnnotation(TeleOp.class);
+            assert annotation != null;
+            return annotation.group();
+        }
+        if (opMode.getClass().isAnnotationPresent(Autonomous.class)) {
+            Autonomous annotation = opMode.getClass().getAnnotation(Autonomous.class);
+            assert annotation != null;
+            return annotation.group();
+        }
+        return "";
+    }
+
+    public OpMode getOpMode(String name, String group) {
+        for (OpMode opMode : getAutonomousModes()) {
+            if (getOpModeName(opMode).equals(name) && getOpModeGroup(opMode).equals(group)) return opMode;
+        }
+        for (OpMode opMode : getTeleOpModes()) {
+            if (getOpModeName(opMode).equals(name) && getOpModeGroup(opMode).equals(group)) return opMode;
+        }
+        return null;
+    }
+
+    public void writeOpmodes(DataOutputStream out) {
+        List<OpModeInfo> opModes = new ArrayList<>();
+
+        for (OpMode opMode : getTeleOpModes()) {
+            System.out.println(opMode.getClass().getSimpleName());
+
+            TeleOp annotation = opMode.getClass().getAnnotation(TeleOp.class);
+
+            assert annotation != null;
+            String name = annotation.name();
+            if (name.isEmpty()) name = opMode.getClass().getSimpleName();
+
+            OpModeInfo info = new OpModeInfo(OpModeInfo.Type.TELEOP, name, annotation.group());
+
+            opModes.add(info);
+        }
+
+        for (OpMode opMode : getAutonomousModes()) {
+            System.out.println(opMode.getClass().getSimpleName());
+
+            Autonomous annotation = opMode.getClass().getAnnotation(Autonomous.class);
+
+            assert annotation != null;
+            String name = annotation.name();
+            if (name.isEmpty()) name = opMode.getClass().getSimpleName();
+
+            OpModeInfo info = new OpModeInfo(OpModeInfo.Type.AUTO, name, annotation.group());
+
+            opModes.add(info);
+        }
+
+        OpModeList opModeList = new OpModeList(opModes);
+        try {
+            out.writeByte(OPMODE_PACKET);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        opModeList.write(out);
     }
 
     public Set<OpMode> getAutonomousModes() {
