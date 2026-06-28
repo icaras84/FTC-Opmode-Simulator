@@ -13,6 +13,10 @@ public class FakeMecanum {
     private static final int FR = 2;
     private static final int BR = 3;
 
+    private enum Wheel {
+        FL, BL, FR, BR
+    }
+
     public FakeMecanum(FakeMotor[] motors) {
         this.motors = motors;
     }
@@ -25,86 +29,84 @@ public class FakeMecanum {
     double fieldYVel = 0;
     double headingVel = 0;
 
-    double frVel;
-    double flVel;
-    double brVel;
-    double blVel;
+    double[] motorPowers = new double[4];
+    double[] motorAccelerations = new double[4];
+    double[] motorVelocities = new double[4];
 
     public void update(double deltaTime) {
-        double fr = motors[FR].getPower();
-        double fl = motors[FL].getPower();
-        double br = motors[BR].getPower();
-        double bl = motors[BL].getPower();
-
         MotorModel model = MotorModel.fromString("a=Au-Bv*abs(d)-Cv-Dsgn(v)");
 
-        double[] coefficients = new double[] {
-                0.7,
-                1.2,
-                0.125,
-                3
+        // maxVel, maxAccel, coast decel, static friction
+
+        double accelK = 0.7;
+        double dutyBackEMF = 1.5;
+        double viscousFriction = 0.7;
+        double coulombFriction = 3; // rolling friction?
+        double staticFriction = 4.5; // accel in/s^2 must be > coulombFriction
+
+        double staticVelocityRegion = 0.05;
+
+        double[] coefficients = new double[]{
+                accelK,
+                dutyBackEMF,
+                viscousFriction,
+                coulombFriction
         };
 
-        double voltage = 13;
-        double frAccel = model.predict(coefficients, frVel, fr, voltage);
-        double flAccel = model.predict(coefficients, flVel, fl, voltage);
-        double brAccel = model.predict(coefficients, brVel, br, voltage);
-        double blAccel = model.predict(coefficients, blVel, bl, voltage);
+        boolean allWheelsStationary = true;
+        for (int i = 0; i < 4; i++) {
+            double power = motors[i].getPower();
+            double vel = motorVelocities[i];
+            double accel = model.predict(coefficients, vel, power, 13);
+            // TODO get voltage from sensor
 
-        Logger.recordOutput("Mecanum/fr", fr);
-        Logger.recordOutput("Mecanum/fl", fl);
-        Logger.recordOutput("Mecanum/br", br);
-        Logger.recordOutput("Mecanum/bl", bl);
-        Logger.recordOutput("Mecanum/frAccel", frAccel);
-        Logger.recordOutput("Mecanum/flAccel", flAccel);
-        Logger.recordOutput("Mecanum/brAccel", brAccel);
-        Logger.recordOutput("Mecanum/blAccel", blAccel);
-        Logger.recordOutput("Mecanum/frVel", frVel);
-        Logger.recordOutput("Mecanum/flVel", flVel);
-        Logger.recordOutput("Mecanum/brVel", brVel);
-        Logger.recordOutput("Mecanum/blVel", blVel);
+            if (Math.abs(vel) < staticVelocityRegion && Math.abs(accel) < staticFriction) {
+                accel = 0;
+                vel = 0;
+            } else {
+                allWheelsStationary = false;
+                accel = model.predict(coefficients, vel, power, 13);
+                vel += accel * deltaTime;
+            }
 
-    //    L = half the wheelbase (center to front/back wheel)
-    //    W = half the track width (center to left/right wheel)
+            motorPowers[i] = power;
+            motorVelocities[i] = vel;
+            motorAccelerations[i] = accel;
+
+            String wheel = String.valueOf(Wheel.values()[i]);
+            Logger.recordOutput("Mecanum/powers/" + wheel, power);
+            Logger.recordOutput("Mecanum/vels/" + wheel, vel);
+            Logger.recordOutput("Mecanum/accels/" + wheel, accel);
+        }
+
+        //    L = half the wheelbase (center to front/back wheel)
+        //    W = half the track width (center to left/right wheel)
         // R = L + W
         double R = 0.2286 + 0.2286;
 
+        double flAccel = motorAccelerations[FL];
+        double frAccel = motorAccelerations[FR];
+        double blAccel = motorAccelerations[BL];
+        double brAccel = motorAccelerations[BR];
+
         double forwardAccel = (frAccel + flAccel + brAccel + blAccel) / 4;
-        double strafeAccel  = (flAccel - frAccel + brAccel - blAccel) / 4;
+        double strafeAccel = (flAccel - frAccel + brAccel - blAccel) / 4;
         double headingAccel = -(brAccel - blAccel + frAccel - flAccel) / (4 * R);
 
         double cos = Math.cos(heading);
         double sin = Math.sin(heading);
         double xAccel = forwardAccel * cos - strafeAccel * sin;
-        double yAccel  = forwardAccel * sin + strafeAccel * cos;
+        double yAccel = forwardAccel * sin + strafeAccel * cos;
 
-        Logger.recordOutput("Mecanum/fieldXAccel", xAccel);
-        Logger.recordOutput("Mecanum/fieldYAccel", yAccel);
+        fieldXVel += xAccel * deltaTime;
+        fieldYVel += yAccel * deltaTime;
+        headingVel += headingAccel * deltaTime;
 
-        if (Math.abs(xAccel) > 0.01 || Math.abs(fieldXVel) > 0.05) {
-            fieldXVel += xAccel * deltaTime;
-        }
-        else {
+        if (allWheelsStationary) {
             fieldXVel = 0;
-        }
-
-        if (Math.abs(yAccel) > 0.01 || Math.abs(fieldYVel) > 0.05) {
-            fieldYVel += yAccel * deltaTime;
-        }
-        else {
             fieldYVel = 0;
-        }
-
-        if (Math.abs(headingAccel) > 0.01 || Math.abs(headingVel) > 0.05) {
-            headingVel += headingAccel * deltaTime;
-        }
-        else {
             headingVel = 0;
         }
-
-        Logger.recordOutput("Mecanum/fieldXVel", fieldXVel);
-        Logger.recordOutput("Mecanum/fieldYVel", fieldYVel);
-        Logger.recordOutput("Mecanum/headingVel", headingVel);
 
         fieldX += fieldXVel * deltaTime;
         fieldY += fieldYVel * deltaTime;
@@ -113,13 +115,18 @@ public class FakeMecanum {
         double cos2 = Math.cos(-heading);
         double sin2 = Math.sin(-heading);
         double forwardVel = fieldXVel * cos2 - fieldYVel * sin2;
-        double strafeVel  = fieldXVel * sin2 + fieldYVel * cos2;
+        double strafeVel = fieldXVel * sin2 + fieldYVel * cos2;
 
-        flVel = forwardVel + strafeVel + headingVel * R;
-        blVel = forwardVel - strafeVel + headingVel * R;
-        frVel = forwardVel - strafeVel - headingVel * R;
-        brVel = forwardVel + strafeVel - headingVel * R;
+        motorVelocities[FL] = forwardVel + strafeVel + headingVel * R;
+        motorVelocities[BL] = forwardVel - strafeVel + headingVel * R;
+        motorVelocities[FR] = forwardVel - strafeVel - headingVel * R;
+        motorVelocities[BR] = forwardVel + strafeVel - headingVel * R;
 
-        Logger.recordOutput("Mecanum/pose", new Pose2d(fieldX, fieldY, new Rotation2d(heading)));
+        Logger.recordOutput("Mecanum/fieldXVel", fieldXVel);
+        Logger.recordOutput("Mecanum/fieldYVel", fieldYVel);
+        Logger.recordOutput("Mecanum/headingVel", headingVel);
+
+        Logger.recordOutput("Mecanum/pose inches",
+                new Pose2d(fieldX, fieldY, new Rotation2d(heading)));
     }
 }
