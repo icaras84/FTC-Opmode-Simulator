@@ -19,7 +19,7 @@ public class FakeMecanum extends SimulatedDrivetrain {
                        double strafeEfficiency) {
         super(motors);
 
-        R = wheelbase + trackWidth;
+        R = wheelbase / 2 + trackWidth / 2;
         wheelRadius = wheelDiameter / 2;
         this.strafeEfficiency = strafeEfficiency;
     }

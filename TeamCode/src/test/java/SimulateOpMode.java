@@ -16,8 +16,8 @@ public class SimulateOpMode {
         mecanumConfig.frontRightMotorName = "frontRight";
         mecanumConfig.backLeftMotorName = "backLeft";
         mecanumConfig.backRightMotorName = "backRight";
-        mecanumConfig.wheelbase = 4.68504; // half distance from frontLeft wheel to backLeft wheel
-        mecanumConfig.trackWidth = 4.56693; // half distance from backRight wheel to backLeft wheel
+        mecanumConfig.wheelbase = 4.68504 * 2; // distance from center of frontLeft wheel to backLeft wheel
+        mecanumConfig.trackWidth = 4.56693 * 2; // distance from center of backRight wheel to backLeft wheel
         mecanumConfig.wheelDiameter = 3.77953;
         mecanumConfig.staticVelocityRegion = 2;
         mecanumConfig.staticFriction = 45;
