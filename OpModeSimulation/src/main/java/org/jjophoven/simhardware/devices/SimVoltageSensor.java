@@ -1,8 +1,9 @@
-package org.jjophoven.fakehardware.devices;
+package org.jjophoven.simhardware.devices;
 
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 
-public class FakeVoltageSensor implements VoltageSensor, FakeHardwareDevice {
+// TODO add voltage sensor noise
+public class SimVoltageSensor implements VoltageSensor, SimHardwareDevice {
     @Override
     public double getVoltage() {
         return 13;

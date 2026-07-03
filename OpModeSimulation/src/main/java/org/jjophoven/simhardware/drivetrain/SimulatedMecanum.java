@@ -1,7 +1,7 @@
-package org.jjophoven.fakehardware.drivetrain;
+package org.jjophoven.simhardware.drivetrain;
 
 
-public class FakeMecanum extends SimulatedDrivetrain {
+public class SimulatedMecanum extends SimulatedDrivetrain {
     private static final int FL = 0;
     private static final int FR = 1;
     private static final int BL = 2;
@@ -13,7 +13,7 @@ public class FakeMecanum extends SimulatedDrivetrain {
 
     // TODO different decel for strafing
 
-    public FakeMecanum(MecanumConfig config) {
+    public SimulatedMecanum(SimulatedMecanumConfig config) {
         super(config, config.frontLeftMotorName, config.frontRightMotorName, config.backLeftMotorName, config.backRightMotorName);
 
         R = config.wheelbase / 2 + config.trackWidth / 2;

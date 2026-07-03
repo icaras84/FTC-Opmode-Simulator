@@ -1,6 +1,6 @@
-package org.jjophoven.fakehardware.drivetrain;
+package org.jjophoven.simhardware.drivetrain;
 
-public class MecanumConfig extends DrivetrainConfig {
+public class SimulatedMecanumConfig extends SimulatedDrivetrainConfig {
     public String frontLeftMotorName;
     public String frontRightMotorName;
     public String backLeftMotorName;

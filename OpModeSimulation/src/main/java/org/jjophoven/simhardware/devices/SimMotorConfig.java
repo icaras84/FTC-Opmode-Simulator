@@ -1,17 +1,17 @@
-package org.jjophoven.fakehardware.devices;
+package org.jjophoven.simhardware.devices;
 
 import org.jjophoven.fit.MotorModel;
 
-public class FakeMotorConfig {
+public class SimMotorConfig {
     public String name;
     public MotorModel motorModel;
     public double[] modelCoefficients;
     public double[] zeroPowerBrakeCoefficients;
     public double staticVelocityRegion;
     public double staticFriction;
-    public FakeVoltageSensor voltageSensor;
+    public SimVoltageSensor voltageSensor;
 
-    public FakeMotorConfig(String name, MotorModel motorModel, double[] modelCoefficients, double[] zeroPowerBrakeCoefficients, double staticVelocityRegion, double staticFriction, FakeVoltageSensor voltageSensor) {
+    public SimMotorConfig(String name, MotorModel motorModel, double[] modelCoefficients, double[] zeroPowerBrakeCoefficients, double staticVelocityRegion, double staticFriction, SimVoltageSensor voltageSensor) {
         this.name = name;
         this.motorModel = motorModel;
         this.modelCoefficients = modelCoefficients;

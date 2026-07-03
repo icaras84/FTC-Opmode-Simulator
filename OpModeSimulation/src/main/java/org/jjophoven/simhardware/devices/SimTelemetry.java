@@ -1,13 +1,13 @@
-package org.jjophoven.fakehardware.devices;
+package org.jjophoven.simhardware.devices;
 
 import org.firstinspires.ftc.robotcore.external.Func;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.jjophoven.simulator.DriverStationSimulator;
 
-public class FakeTelemetry implements Telemetry {
+public class SimTelemetry implements Telemetry {
     private final DriverStationSimulator driverStation;
 
-    public FakeTelemetry(DriverStationSimulator driverStation) {
+    public SimTelemetry(DriverStationSimulator driverStation) {
         this.driverStation = driverStation;
     }
 

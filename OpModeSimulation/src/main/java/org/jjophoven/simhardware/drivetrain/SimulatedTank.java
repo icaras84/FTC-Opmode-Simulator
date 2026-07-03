@@ -1,14 +1,14 @@
-package org.jjophoven.fakehardware.drivetrain;
+package org.jjophoven.simhardware.drivetrain;
 
-public class FakeTank extends SimulatedDrivetrain {
+public class SimulatedTank extends SimulatedDrivetrain {
     private static final int FL = 0;
     private static final int FR = 1;
     private static final int BL = 2;
     private static final int BR = 3;
 
-    private final TankConfig config;
+    private final SimulatedTankConfig config;
 
-    public FakeTank(TankConfig config) {
+    public SimulatedTank(SimulatedTankConfig config) {
         super(config, config.frontLeftMotorName, config.frontRightMotorName, config.backLeftMotorName, config.backRightMotorName);
         this.config = config;
     }

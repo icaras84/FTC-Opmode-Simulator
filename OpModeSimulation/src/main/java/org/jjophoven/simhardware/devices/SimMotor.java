@@ -1,4 +1,4 @@
-package org.jjophoven.fakehardware.devices;
+package org.jjophoven.simhardware.devices;
 
 import com.qualcomm.robotcore.hardware.DcMotorController;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigu
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 
-public class FakeMotor implements DcMotorEx, FakeHardwareDevice {
+public class SimMotor implements DcMotorEx, SimHardwareDevice {
     private double power = 0;
     public double velocity = 0;
     private double acceleration = 0;
@@ -16,9 +16,9 @@ public class FakeMotor implements DcMotorEx, FakeHardwareDevice {
     public String deviceName;
     public ZeroPowerBehavior zeroPowerBehavior;
 
-    public FakeMotorConfig config;
+    public SimMotorConfig config;
 
-    public FakeMotor(FakeMotorConfig config) {
+    public SimMotor(SimMotorConfig config) {
         this.config = config;
     }
 

@@ -1,4 +1,4 @@
-package org.jjophoven.fakehardware.drivetrain;
+package org.jjophoven.simhardware.drivetrain;
 
 import org.psilynx.psikit.core.Logger;
 import org.psilynx.psikit.core.wpi.math.Pose2d;

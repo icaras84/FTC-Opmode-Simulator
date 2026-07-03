@@ -1,13 +1,13 @@
-package org.jjophoven.fakehardware;
+package org.jjophoven.simhardware;
 
 import androidx.annotation.Nullable;
 import com.qualcomm.robotcore.hardware.*;
-import org.jjophoven.fakehardware.devices.*;
-import org.jjophoven.fakehardware.drivetrain.SimulatedDrivetrain;
+import org.jjophoven.simhardware.devices.*;
+import org.jjophoven.simhardware.drivetrain.SimulatedDrivetrain;
 
 import java.util.List;
 
-public class FakeHardwareMap extends HardwareMap {
+public class SimHardwareMap extends HardwareMap {
     private SimulatedDrivetrain drivetrain;
 
     public SimulatedDrivetrain getDrivetrain() {
@@ -18,9 +18,9 @@ public class FakeHardwareMap extends HardwareMap {
         this.drivetrain = drivetrain;
     }
 
-    public FakeHardwareMap() {
+    public SimHardwareMap() {
         super(null, null);
-        FakeVoltageSensor voltageSensor = new FakeVoltageSensor();
+        SimVoltageSensor voltageSensor = new SimVoltageSensor();
 
         // TODO automatically do this for every device
         this.voltageSensor.put("voltageSensor", voltageSensor);
@@ -47,15 +47,15 @@ public class FakeHardwareMap extends HardwareMap {
         }
     }
 
-    public FakeMotor motor(FakeMotorConfig config) {
-        return register(config.name, new FakeMotor(config));
+    public SimMotor motor(SimMotorConfig config) {
+        return register(config.name, new SimMotor(config));
     }
 
-    public FakeGobildaPinpoint pinpoint(String name) {
+    public SimGobildaPinpoint pinpoint(String name) {
         if (drivetrain == null) {
             throw new RuntimeException("Drivetrain not set");
         }
-        return register(name, new FakeGobildaPinpoint(drivetrain));
+        return register(name, new SimGobildaPinpoint(drivetrain));
     }
 
     public <T extends HardwareDevice> T register(String name, T device) {
@@ -71,7 +71,7 @@ public class FakeHardwareMap extends HardwareMap {
         for (List<HardwareDevice> device : allDevicesMap.values()) {
             for (HardwareDevice d : device) {
                 try {
-                    ((FakeHardwareDevice) d).update();
+                    ((SimHardwareDevice) d).update();
                 } catch (ClassCastException ignored) {
                 }
             }

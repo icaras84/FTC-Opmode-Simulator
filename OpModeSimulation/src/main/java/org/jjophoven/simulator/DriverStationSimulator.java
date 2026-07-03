@@ -3,8 +3,8 @@ package org.jjophoven.simulator;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import org.jjophoven.driverstation.packets.*;
-import org.jjophoven.fakehardware.FakeHardwareMap;
-import org.jjophoven.fakehardware.devices.FakeTelemetry;
+import org.jjophoven.simhardware.SimHardwareMap;
+import org.jjophoven.simhardware.devices.SimTelemetry;
 import org.jjophoven.input.Keybinds;
 
 import java.io.*;
@@ -33,7 +33,7 @@ public class DriverStationSimulator {
     public OpModeState state = OpModeState.WAIT_FOR_INIT;
 
     OpMode opMode;
-    FakeHardwareMap fakeHardwareMap;
+    SimHardwareMap simHardwareMap;
     Keybinds gamepad1Keybinds;
     Keybinds gamepad2Keybinds;
     OpModeRegister opModeRegister = new OpModeRegister();
@@ -43,7 +43,7 @@ public class DriverStationSimulator {
         this.gamepad1Keybinds = config.gamepad1Keybinds;
         this.gamepad2Keybinds = config.gamepad2Keybinds;
         this.simulationConfig = config;
-        this.fakeHardwareMap = simulationConfig.fakeHardwareMap;
+        this.simHardwareMap = simulationConfig.simHardwareMap;
 
         startServer();
         acceptClient();
@@ -121,7 +121,7 @@ public class DriverStationSimulator {
 
     public void update() {
         poll();
-        fakeHardwareMap.update();
+        simHardwareMap.update();
     }
 
     public void poll() {
@@ -155,9 +155,9 @@ public class DriverStationSimulator {
                         OpModePacket packet = OpModePacket.read(in);
                         opMode = opModeRegister.getOpMode(packet);
 
-                        opMode.telemetry = new FakeTelemetry(this);
+                        opMode.telemetry = new SimTelemetry(this);
 
-                        opMode.hardwareMap = fakeHardwareMap;
+                        opMode.hardwareMap = simHardwareMap;
                         opMode.gamepad1 = new Gamepad();
                         opMode.gamepad2 = new Gamepad();
 

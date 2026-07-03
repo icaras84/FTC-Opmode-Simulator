@@ -1,9 +1,9 @@
-package org.jjophoven.fakehardware.drivetrain;
+package org.jjophoven.simhardware.drivetrain;
 
-import org.jjophoven.fakehardware.FakeHardwareMap;
+import org.jjophoven.simhardware.SimHardwareMap;
 
-public abstract class DrivetrainConfig {
-    public FakeHardwareMap fakeHardwareMap;
+public abstract class SimulatedDrivetrainConfig {
+    public SimHardwareMap simHardwareMap;
     public double maxVelocity;
     public double maxAcceleration;
     public double naturalDeceleration;

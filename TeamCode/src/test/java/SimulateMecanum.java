@@ -1,7 +1,7 @@
-import org.jjophoven.fakehardware.FakeHardwareMap;
-import org.jjophoven.fakehardware.drivetrain.FakeMecanum;
+import org.jjophoven.simhardware.SimHardwareMap;
+import org.jjophoven.simhardware.drivetrain.SimulatedMecanum;
 import org.jjophoven.simulator.SimulationConfig;
-import org.jjophoven.fakehardware.drivetrain.MecanumConfig;
+import org.jjophoven.simhardware.drivetrain.SimulatedMecanumConfig;
 import org.jjophoven.input.DefaultKeybinds;
 import org.jjophoven.simulator.DriverStationSimulator;
 import org.junit.Test;
@@ -11,9 +11,9 @@ public class SimulateMecanum {
     @Test
     public void test() throws IOException, InterruptedException {
         SimulationConfig simulationConfig = new SimulationConfig();
-        FakeHardwareMap fakeHardwareMap = new FakeHardwareMap();
+        SimHardwareMap simHardwareMap = new SimHardwareMap();
 
-        MecanumConfig mecanumConfig = new MecanumConfig();
+        SimulatedMecanumConfig mecanumConfig = new SimulatedMecanumConfig();
         mecanumConfig.frontLeftMotorName = "frontLeft";
         mecanumConfig.frontRightMotorName = "frontRight";
         mecanumConfig.backLeftMotorName = "backLeft";
@@ -27,15 +27,15 @@ public class SimulateMecanum {
         mecanumConfig.maxVelocity = 70;
         mecanumConfig.naturalDeceleration = 40;
         mecanumConfig.strafeEfficiency = 0.90;
-        mecanumConfig.fakeHardwareMap = fakeHardwareMap;
+        mecanumConfig.simHardwareMap = simHardwareMap;
 
-        fakeHardwareMap.setDrivetrain(new FakeMecanum(mecanumConfig));
+        simHardwareMap.setDrivetrain(new SimulatedMecanum(mecanumConfig));
 
         simulationConfig.gamepad1Keybinds = new DefaultKeybinds();
         simulationConfig.gamepad2Keybinds = new DefaultKeybinds();
-        simulationConfig.fakeHardwareMap = fakeHardwareMap;
+        simulationConfig.simHardwareMap = simHardwareMap;
 
-        fakeHardwareMap.pinpoint("pinpoint");
+        simHardwareMap.pinpoint("pinpoint");
 
         DriverStationSimulator driverStation = new DriverStationSimulator(simulationConfig);
     }

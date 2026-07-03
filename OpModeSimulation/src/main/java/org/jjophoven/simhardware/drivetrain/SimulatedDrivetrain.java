@@ -1,27 +1,27 @@
-package org.jjophoven.fakehardware.drivetrain;
+package org.jjophoven.simhardware.drivetrain;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
-import org.jjophoven.fakehardware.devices.FakeMotor;
-import org.jjophoven.fakehardware.devices.FakeVoltageSensor;
-import org.jjophoven.fakehardware.devices.FakeMotorConfig;
+import org.jjophoven.simhardware.devices.SimMotor;
+import org.jjophoven.simhardware.devices.SimVoltageSensor;
+import org.jjophoven.simhardware.devices.SimMotorConfig;
 import org.jjophoven.fit.MotorModel;
 import org.psilynx.psikit.core.Logger;
 
 public abstract class SimulatedDrivetrain {
-    private final FakeMotor[] motors;
+    private final SimMotor[] motors;
 
     public MotionVector position = new MotionVector(0, 0, 0);
     public MotionVector velocity = new MotionVector(0, 0, 0);
 
-    public DrivetrainConfig config;
+    public SimulatedDrivetrainConfig config;
 
     protected double[] motorAngularVelocities;
 
-    public SimulatedDrivetrain(DrivetrainConfig config, String... motorNames) {
+    public SimulatedDrivetrain(SimulatedDrivetrainConfig config, String... motorNames) {
         this.config = config;
-        this.motors = new FakeMotor[motorNames.length];
+        this.motors = new SimMotor[motorNames.length];
         for (int i = 0; i < motorNames.length; i++) {
             motors[i] = createMotor(motorNames[i]);
         }
@@ -37,7 +37,7 @@ public abstract class SimulatedDrivetrain {
                 AngleUnit.normalizeRadians(position.theta));
     }
 
-    public FakeMotor createMotor(String name) {
+    public SimMotor createMotor(String name) {
         double maxOmega = config.maxVelocity / config.wheelRadius;
         double maxAlpha = config.maxAcceleration / config.wheelRadius;
         double naturalAlpha = config.naturalDeceleration / config.wheelRadius;
@@ -53,8 +53,8 @@ public abstract class SimulatedDrivetrain {
                 kA, kBackEMF, 0, kCoulombFriction
         };
 
-        FakeMotorConfig motorConfig = new FakeMotorConfig(name, MotorModel.fromString("a=Au-Bv*abs(d)-Cv-Dsgn(v)"), motorCoefficients, zeroPowerBrakeCoefficients, config.staticVelocityRegion/config.wheelRadius, config.staticFriction/config.wheelRadius, (FakeVoltageSensor) config.fakeHardwareMap.voltageSensor.iterator().next());
-        return config.fakeHardwareMap.motor(motorConfig);
+        SimMotorConfig motorConfig = new SimMotorConfig(name, MotorModel.fromString("a=Au-Bv*abs(d)-Cv-Dsgn(v)"), motorCoefficients, zeroPowerBrakeCoefficients, config.staticVelocityRegion/config.wheelRadius, config.staticFriction/config.wheelRadius, (SimVoltageSensor) config.simHardwareMap.voltageSensor.iterator().next());
+        return config.simHardwareMap.motor(motorConfig);
     }
 
     public void step(double deltaTime) {
@@ -62,7 +62,7 @@ public abstract class SimulatedDrivetrain {
         for (int i = 0; i < motors.length; i++) {
             //motors[i].step(deltaTime);
 
-            FakeMotor motor = motors[i];
+            SimMotor motor = motors[i];
             motorAngularVelocities[i] = motor.getVelocity();
 
             Logger.recordOutput("Mecanum/angular vels radians per second/" + motor.deviceName, motor.getVelocity());

@@ -1,6 +1,6 @@
-import org.jjophoven.fakehardware.FakeHardwareMap;
-import org.jjophoven.fakehardware.drivetrain.FakeTank;
-import org.jjophoven.fakehardware.drivetrain.TankConfig;
+import org.jjophoven.simhardware.SimHardwareMap;
+import org.jjophoven.simhardware.drivetrain.SimulatedTank;
+import org.jjophoven.simhardware.drivetrain.SimulatedTankConfig;
 import org.jjophoven.simulator.SimulationConfig;
 import org.jjophoven.input.DefaultKeybinds;
 import org.jjophoven.simulator.DriverStationSimulator;
@@ -12,9 +12,9 @@ public class SimulateTank { // TODO create a way to tag what opmodes are using w
     public void test() throws IOException, InterruptedException {
         SimulationConfig simulationConfig = new SimulationConfig();
 
-        FakeHardwareMap fakeHardwareMap = new FakeHardwareMap();
+        SimHardwareMap simHardwareMap = new SimHardwareMap();
 
-        TankConfig config = new TankConfig();
+        SimulatedTankConfig config = new SimulatedTankConfig();
         config.frontLeftMotorName = "frontLeft";
         config.frontRightMotorName = "frontRight";
         config.backLeftMotorName = "backLeft";
@@ -26,15 +26,15 @@ public class SimulateTank { // TODO create a way to tag what opmodes are using w
         config.maxAcceleration = 250;
         config.maxVelocity = 70;
         config.naturalDeceleration = 40;
-        config.fakeHardwareMap = fakeHardwareMap;
+        config.simHardwareMap = simHardwareMap;
 
-        fakeHardwareMap.setDrivetrain(new FakeTank(config));
+        simHardwareMap.setDrivetrain(new SimulatedTank(config));
 
         simulationConfig.gamepad1Keybinds = new DefaultKeybinds();
         simulationConfig.gamepad2Keybinds = new DefaultKeybinds();
-        simulationConfig.fakeHardwareMap = fakeHardwareMap;
+        simulationConfig.simHardwareMap = simHardwareMap;
 
-        fakeHardwareMap.pinpoint("pinpoint");
+        simHardwareMap.pinpoint("pinpoint");
 
         DriverStationSimulator driverStation = new DriverStationSimulator(simulationConfig);
     }
