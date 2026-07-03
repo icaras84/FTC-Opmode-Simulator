@@ -1,7 +1,6 @@
 plugins {
     id 'java'
     id 'application'
-    id 'com.github.johnrengelman.shadow' version '8.1.1'
 }
 
 repositories {
@@ -21,8 +20,7 @@ java {
     targetCompatibility = JavaVersion.VERSION_1_8
 }
 
-shadowJar {
-    archiveFileName = 'DriverStationWindow.jar'
+jar {
     manifest {
         attributes 'Main-Class': 'org.jjophoven.driverstation.DriverStationWindow'
     }

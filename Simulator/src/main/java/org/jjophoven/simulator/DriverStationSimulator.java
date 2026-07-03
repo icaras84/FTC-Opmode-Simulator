@@ -20,7 +20,7 @@ import java.util.Set;
 // TODO add ascope and default robot models in github releases
 public class DriverStationSimulator {
     private static final int PORT = 8080;
-    private static final int SOCKET_TIMEOUT_MS = 30000;
+    private static final int SOCKET_TIMEOUT_MS = 9999999;
 
     private ServerSocket listener;
     private Socket clientSocket;
@@ -212,7 +212,7 @@ public class DriverStationSimulator {
     private static Process startDriverStationProcess() throws IOException {
         File projectRoot = findProjectRoot();
         File driverStationJar = new File(projectRoot,
-                "DriverStationClient/build/libs/DriverStationWindow.jar");
+                "DriverStationWindow/build/libs/DriverStationWindow.jar");
 
         if (!driverStationJar.exists()) {
             buildDriverStationJar(projectRoot);
@@ -244,16 +244,16 @@ public class DriverStationSimulator {
     }
 
     /**
-     * Build the DriverStationWindow fat JAR using Gradle (one-time operation).
+     * Build the DriverStationWindow JAR using Gradle (one-time operation).
      * This is only called if the JAR doesn't already exist.
      */
     private static void buildDriverStationJar(File projectRoot) throws IOException {
-        System.out.println("[DriverStation] Building DriverStationWindow fat JAR (this happens once)...");
+        System.out.println("[DriverStation] Building DriverStationWindow JAR (this happens once)...");
 
         File gradlew = new File(projectRoot, isWindows() ? "gradlew.bat" : "gradlew");
         Process buildProcess = new ProcessBuilder(
                 gradlew.getAbsolutePath(),
-                ":DriverStationClient:shadowJar"
+                ":DriverStationWindow:build"
         )
                 .directory(projectRoot)
                 .redirectErrorStream(true)
@@ -267,7 +267,7 @@ public class DriverStationSimulator {
             }
         }
 
-        int exitCode = 0;
+        int exitCode;
         try {
             exitCode = buildProcess.waitFor();
         } catch (InterruptedException e) {

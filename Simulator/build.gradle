@@ -37,7 +37,7 @@ android {
 dependencies {
     // The simulation library only needs the FTC SDK classes (library)
     compileOnly project(':FtcRobotController')
-    implementation project(':DriverStationClient')
+    implementation project(':DriverStationWindow')
     implementation project(':MotorModeling')
     testImplementation 'junit:junit:4.13.2'
 }
