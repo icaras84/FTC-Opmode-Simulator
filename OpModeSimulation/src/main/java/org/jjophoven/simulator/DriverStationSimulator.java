@@ -5,7 +5,7 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 import org.jjophoven.driverstation.packets.*;
 import org.jjophoven.fakehardware.FakeHardwareMap;
 import org.jjophoven.fakehardware.devices.FakeTelemetry;
-import org.jjophoven.input.Keybinds;
+import org.jjophoven.input.DefaultKeybinds;
 
 import java.io.*;
 import java.net.ServerSocket;
@@ -29,8 +29,8 @@ public class DriverStationSimulator {
 
     OpMode opMode;
     FakeHardwareMap fakeHardwareMap;
-    Keybinds gamepad1Keybinds;
-    Keybinds gamepad2Keybinds;
+    DefaultKeybinds gamepad1Keybinds;
+    DefaultKeybinds gamepad2Keybinds;
     OpModeRegister opModeRegister = new OpModeRegister();
     SimulationConfig simulationConfig;
 
