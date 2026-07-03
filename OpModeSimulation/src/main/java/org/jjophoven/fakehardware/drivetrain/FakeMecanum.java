@@ -1,6 +1,5 @@
 package org.jjophoven.fakehardware.drivetrain;
 
-import org.jjophoven.fakehardware.FakeMotor;
 
 public class FakeMecanum extends SimulatedDrivetrain {
     private static final int FL = 0;
@@ -12,16 +11,14 @@ public class FakeMecanum extends SimulatedDrivetrain {
     private final double wheelRadius;
     private final double strafeEfficiency;
 
-    public FakeMecanum(FakeMotor[] motors,
-                       double wheelbase,
-                       double trackWidth,
-                       double wheelDiameter,
-                       double strafeEfficiency) {
-        super(motors);
+    // TODO different decel for strafing
 
-        R = wheelbase / 2 + trackWidth / 2;
-        wheelRadius = wheelDiameter / 2;
-        this.strafeEfficiency = strafeEfficiency;
+    public FakeMecanum(MecanumConfig config) {
+        super(config, config.frontLeftMotorName, config.frontRightMotorName, config.backLeftMotorName, config.backRightMotorName);
+
+        R = config.wheelbase / 2 + config.trackWidth / 2;
+        wheelRadius = config.wheelRadius;
+        this.strafeEfficiency = config.strafeEfficiency;
     }
 
     @Override

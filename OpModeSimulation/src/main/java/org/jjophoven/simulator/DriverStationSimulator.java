@@ -2,6 +2,9 @@ package org.jjophoven.simulator;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.Gamepad;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.jjophoven.driverstation.packets.*;
 import org.jjophoven.fakehardware.FakeHardwareMap;
 import org.jjophoven.fakehardware.FakeTelemetry;
@@ -38,6 +41,7 @@ public class DriverStationSimulator {
         this.gamepad1Keybinds = config.gamepad1Keybinds;
         this.gamepad2Keybinds = config.gamepad2Keybinds;
         this.simulationConfig = config;
+        this.fakeHardwareMap = simulationConfig.fakeHardwareMap;
 
         startServer();
         acceptClient();
@@ -110,7 +114,14 @@ public class DriverStationSimulator {
 
     public void update() {
         poll();
-        fakeHardwareMap.updateHardware();
+
+        simulationConfig.drivetrain.step(0.02);
+        fakeHardwareMap.pinpoint.pose2D =
+                new Pose2D(DistanceUnit.MM,
+                        0,
+                        0,
+                        AngleUnit.RADIANS,
+                        AngleUnit.normalizeRadians(simulationConfig.drivetrain.position.theta));
     }
 
     public void poll() {
@@ -146,12 +157,9 @@ public class DriverStationSimulator {
 
                         opMode.telemetry = new FakeTelemetry(this);
 
-                        fakeHardwareMap = new FakeHardwareMap(simulationConfig);
                         opMode.hardwareMap = fakeHardwareMap;
                         opMode.gamepad1 = new Gamepad();
                         opMode.gamepad2 = new Gamepad();
-
-                        fakeHardwareMap.initializeHardware();
 
                         break;
                 }
@@ -194,7 +202,9 @@ public class DriverStationSimulator {
         }
 
         state = null;
-        opMode.stop();
+        if (opMode != null) {
+            opMode.stop();
+        }
 
         log("Driver Station shutdown.");
     }

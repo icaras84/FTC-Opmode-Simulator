@@ -1,5 +1,7 @@
 package org.jjophoven.fakehardware.drivetrain;
 
+import com.qualcomm.robotcore.hardware.DcMotor;
+import org.jjophoven.fakehardware.FakeHardwareMap;
 import org.jjophoven.fakehardware.FakeMotor;
 import org.jjophoven.fit.MotorModel;
 import org.psilynx.psikit.core.Logger;
@@ -10,12 +12,37 @@ public abstract class SimulatedDrivetrain {
     public MotionVector position = new MotionVector(0, 0, 0);
     public MotionVector velocity = new MotionVector(0, 0, 0);
 
+    public DrivetrainConfig config;
+
     protected double[] motorAngularVelocities;
 
-    public SimulatedDrivetrain(FakeMotor[] motors) {
-        this.motors = motors;
+    public SimulatedDrivetrain(DrivetrainConfig config, String... motorNames) {
+        this.config = config;
+        this.motors = new FakeMotor[motorNames.length];
+        for (int i = 0; i < motorNames.length; i++) {
+            motors[i] = createMotor(motorNames[i]);
+        }
 
         motorAngularVelocities = new double[motors.length];
+    }
+
+    public FakeMotor createMotor(String name) {
+        double maxOmega = config.maxVelocity / config.wheelRadius;
+        double maxAlpha = config.maxAcceleration / config.wheelRadius;
+        double naturalAlpha = config.naturalDeceleration / config.wheelRadius;
+
+        double kA = (maxAlpha + naturalAlpha) / 13; // TODO get battery voltage
+        double kBackEMF = maxAlpha / maxOmega;
+        double kCoulombFriction = config.naturalDeceleration / config.wheelRadius;
+
+        double[] zeroPowerBrakeCoefficients  = new double[]{
+                    kA, 0, kBackEMF, kCoulombFriction
+        };
+        double[] motorCoefficients = new double[]{
+                kA, kBackEMF, 0, kCoulombFriction
+        };
+
+        return new FakeMotor(config.fakeHardwareMap, name, MotorModel.fromString("a=Au-Bv*abs(d)-Cv-Dsgn(v)"), motorCoefficients, zeroPowerBrakeCoefficients, config.staticVelocityRegion/config.wheelRadius, config.staticFriction/config.wheelRadius);
     }
 
     public void step(double deltaTime) {

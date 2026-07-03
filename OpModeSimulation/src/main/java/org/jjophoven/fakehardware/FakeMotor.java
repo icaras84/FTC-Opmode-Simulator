@@ -15,17 +15,24 @@ public class FakeMotor implements DcMotorEx {
     private double acceleration = 0;
 
     MotorModel motorModel;
-    double[] motorModelCoefficients;
+    double[] zeroPowerBrakeCoefficients;
+    double[] modelCoefficients;
     double staticVelocityRegion;
     double staticFriction;
     public String deviceName;
+    public ZeroPowerBehavior zeroPowerBehavior;
+    public FakeHardwareMap fakeHardwareMap;
 
-    public FakeMotor(String name, MotorModel motorModel, double[] motorModelCoefficients, double staticVelocityRegion, double staticFriction) {
+    public FakeMotor(FakeHardwareMap fakeHardwareMap, String name, MotorModel motorModel, double[] modelCoefficients, double[] zeroPowerBrakeCoefficients, double staticVelocityRegion, double staticFriction) {
+        this.fakeHardwareMap = fakeHardwareMap;
         this.deviceName = name;
         this.motorModel = motorModel;
-        this.motorModelCoefficients = motorModelCoefficients;
+        this.modelCoefficients = modelCoefficients;
+        this.zeroPowerBrakeCoefficients = zeroPowerBrakeCoefficients;
         this.staticVelocityRegion = staticVelocityRegion;
         this.staticFriction = staticFriction;
+
+        fakeHardwareMap.put(name, this);
     }
 
     @Override
@@ -34,7 +41,13 @@ public class FakeMotor implements DcMotorEx {
     }
 
     public void step(double deltaTime) {
-        acceleration = motorModel.predict(motorModelCoefficients, velocity, power, 13); // TODO get voltage from sensor
+        double voltage = fakeHardwareMap.voltageSensor.iterator().next().getVoltage();
+        if (zeroPowerBehavior == ZeroPowerBehavior.BRAKE && power == 0) {
+            acceleration = motorModel.predict(zeroPowerBrakeCoefficients, velocity, power, voltage);
+        }
+        else {
+            acceleration = motorModel.predict(modelCoefficients, velocity, power, voltage);
+        }
         if (Math.abs(velocity) < staticVelocityRegion && Math.abs(acceleration) < staticFriction) {
             velocity = 0;
             acceleration = 0;
@@ -187,12 +200,12 @@ public class FakeMotor implements DcMotorEx {
 
     @Override
     public void setZeroPowerBehavior(ZeroPowerBehavior zeroPowerBehavior) {
-
+        this.zeroPowerBehavior = zeroPowerBehavior;
     }
 
     @Override
     public ZeroPowerBehavior getZeroPowerBehavior() {
-        return null;
+        return this.zeroPowerBehavior;
     }
 
     @Override

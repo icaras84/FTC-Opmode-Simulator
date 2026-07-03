@@ -1,31 +1,24 @@
 package org.jjophoven.fakehardware.drivetrain;
 
-import org.jjophoven.fakehardware.FakeMotor;
-
 public class FakeTank extends SimulatedDrivetrain {
     private static final int FL = 0;
     private static final int FR = 1;
     private static final int BL = 2;
     private static final int BR = 3;
 
-    private final double trackWidth;
-    private final double wheelRadius;
+    private final TankConfig config;
 
-    public FakeTank(FakeMotor[] motors,
-                    double trackWidth,
-                    double wheelDiameter) {
-        super(motors);
-
-        this.trackWidth = trackWidth;
-        this.wheelRadius = wheelDiameter / 2;
+    public FakeTank(TankConfig config) {
+        super(config, config.frontLeftMotorName, config.frontRightMotorName, config.backLeftMotorName, config.backRightMotorName);
+        this.config = config;
     }
 
     @Override
     MotionVector forwardKinematics(double[] motors) {
-        double fl = motors[FL] * wheelRadius;
-        double fr = motors[FR] * wheelRadius;
-        double bl = motors[BL] * wheelRadius;
-        double br = motors[BR] * wheelRadius;
+        double fl = motors[FL] * config.wheelRadius;
+        double fr = motors[FR] * config.wheelRadius;
+        double bl = motors[BL] * config.wheelRadius;
+        double br = motors[BR] * config.wheelRadius;
 
         double left = (fl + bl) / 2.0;
         double right = (fr + br) / 2.0;
@@ -33,20 +26,20 @@ public class FakeTank extends SimulatedDrivetrain {
         return new MotionVector(
                 (left + right) / 2.0,
                 0.0,
-                (left - right) / trackWidth
+                (left - right) / config.trackWidth
         );
     }
 
     @Override
     double[] inverseKinematics(MotionVector motion) {
-        double left = motion.x + motion.theta * trackWidth / 2.0;
-        double right = motion.x - motion.theta * trackWidth / 2.0;
+        double left = motion.x + motion.theta * config.trackWidth / 2.0;
+        double right = motion.x - motion.theta * config.trackWidth / 2.0;
 
         return new double[]{
-                left / wheelRadius,
-                right / wheelRadius,
-                left / wheelRadius,
-                right / wheelRadius
+                left / config.wheelRadius,
+                right / config.wheelRadius,
+                left / config.wheelRadius,
+                right / config.wheelRadius
         };
     }
 }

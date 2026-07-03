@@ -6,13 +6,16 @@ import com.qualcomm.robotcore.hardware.I2cAddr;
 import com.qualcomm.robotcore.hardware.I2cDeviceSynchSimple;
 import com.qualcomm.robotcore.hardware.I2cWaitControl;
 import com.qualcomm.robotcore.hardware.TimestampedData;
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 
-public class FakePinpoint extends GoBildaPinpointDriver {
-    public FakePinpoint() {
+public class FakeGobildaPinpoint extends GoBildaPinpointDriver {
+    public FakeGobildaPinpoint() {
         super(new FakeI2C(), false);
+    }
+
+    @Override
+    protected synchronized boolean doInitialize() {
+        return true;
     }
 
     public Pose2D pose2D;

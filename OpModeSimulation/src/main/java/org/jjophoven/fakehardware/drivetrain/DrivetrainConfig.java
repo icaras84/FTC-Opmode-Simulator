@@ -1,6 +1,13 @@
 package org.jjophoven.fakehardware.drivetrain;
 
-public interface DrivetrainConfig {
-    <T> T configureDevice(Class<? extends T> device, String deviceName);
-    SimulatedDrivetrain createDrivetrain();
+import org.jjophoven.fakehardware.FakeHardwareMap;
+
+public abstract class DrivetrainConfig {
+    public FakeHardwareMap fakeHardwareMap;
+    public double maxVelocity;
+    public double maxAcceleration;
+    public double naturalDeceleration;
+    public double wheelRadius;
+    public double staticVelocityRegion;
+    public double staticFriction;
 }
