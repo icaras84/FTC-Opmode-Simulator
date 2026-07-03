@@ -1,4 +1,4 @@
-
+[![](https://jitpack.io/v/jjophoven/FTC-Opmode-Simulator.svg)](https://jitpack.io/#jjophoven/FTC-Opmode-Simulator)
 
 https://github.com/user-attachments/assets/8d33261f-094c-4cb3-9bf3-9e1ee5f3c3f3
 
