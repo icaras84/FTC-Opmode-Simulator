@@ -4,7 +4,6 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 
 import java.util.Set;
 
-// TODO make a keyboard to controller image map
 public class DefaultKeybinds extends Keybinds {
     @Override
     public Gamepad keybinds(Gamepad keybinds) {
@@ -22,10 +21,10 @@ public class DefaultKeybinds extends Keybinds {
         keybinds.back = button(Keys.TAB);
         keybinds.start = button(Keys.ENTER);
 
-        keybinds.right_bumper = button(Keys.Q);
-        keybinds.left_bumper = button(Keys.E);
-        keybinds.right_trigger = trigger(Keys.U);
-        keybinds.left_trigger = trigger(Keys.O);
+        keybinds.right_bumper = button(Keys.E);
+        keybinds.left_bumper = button(Keys.Q);
+        keybinds.right_trigger = trigger(Keys.O);
+        keybinds.left_trigger = trigger(Keys.U);
 
         keybinds.square = button(Keys.P);
         keybinds.circle = button(Keys.OPEN_BRACKET);
