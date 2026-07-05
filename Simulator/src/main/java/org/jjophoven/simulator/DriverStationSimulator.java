@@ -149,11 +149,12 @@ public class DriverStationSimulator {
         previousTime = currentTime;
 
         Pose2D pose = simHardwareMap.getDrivetrain().getActualPose();
-        boolean isOutOfBounds = Boundaries.isOutOfBounds(pose.getX(DistanceUnit.INCH), pose.getY(DistanceUnit.INCH), 12, 18, pose.getHeading(AngleUnit.RADIANS));
+        boolean isOutOfBounds = Boundaries.isOutOfBounds(pose.getX(DistanceUnit.INCH), pose.getY(DistanceUnit.INCH), 12, 16, pose.getHeading(AngleUnit.RADIANS));
         if (isOutOfBounds) {
-            Boundaries.Point closest = Boundaries.closestInBoundsPosition(pose.getX(DistanceUnit.INCH), pose.getY(DistanceUnit.INCH), 12, 18, pose.getHeading(AngleUnit.RADIANS));
+            Boundaries.Point closest = Boundaries.closestInBoundsPosition(pose.getX(DistanceUnit.INCH), pose.getY(DistanceUnit.INCH), 12, 16, pose.getHeading(AngleUnit.RADIANS));
             simHardwareMap.getDrivetrain().setPosition(new MotionVector(closest.x, closest.y, pose.getHeading(AngleUnit.RADIANS)));
         }
+        // velocity.project(-direction is out of bounds)
         Logger.recordOutput("isInBounds", !isOutOfBounds);
 
     }

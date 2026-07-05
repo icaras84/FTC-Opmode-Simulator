@@ -7,6 +7,7 @@ public class Boundaries {
             new Point(0, 0),
             new Point(0, 68.8),
             new Point(7.6, 68.8),
+            new Point(7.6, 118.8),
             new Point(23.4, 141.3),
             new Point(117.9, 141.3),
             new Point(133.8, 118.8),
@@ -29,7 +30,8 @@ public class Boundaries {
 
         for (int iter = 0; iter < 20; iter++) {
 
-            Point[] robot = robotCorners(x + 4.1338583, y, width, length, heading);
+//            Point[] robot = robotCorners(x + 4.1338583, y, width, length, heading);
+            Point[] robot = robotCorners(x, y, width, length, heading);
 
             boolean changed = false;
 
@@ -110,7 +112,9 @@ public class Boundaries {
             double heading
     ) {
         // TODO configure distance between center of drivetrain and center of robot
-        Point[] robot = robotCorners(centerX + 4.1338583, centerY, width, length, heading);
+
+//        Point[] robot = robotCorners(centerX + 4.1338583, centerY, width, length, heading);
+        Point[] robot = robotCorners(centerX, centerY, width, length, heading);
 
         // Every corner must be inside.
         for (Point p : robot) {
