@@ -1,6 +1,8 @@
 package org.jjophoven.driverstation;
 
 import com.studiohartman.jamepad.ControllerManager;
+import com.studiohartman.jamepad.ControllerState;
+
 import org.jjophoven.driverstation.packets.ControllerPacket;
 import org.jjophoven.driverstation.packets.KeyPacket;
 import org.jjophoven.driverstation.packets.OpModePacket;
@@ -420,7 +422,10 @@ public class DriverStationWindow extends JFrame {
                 while (this.dsState == OpModeState.RUNNING || this.dsState == OpModeState.INITIALIZING) {
                     gPadManager.update();
 
-                    connection.send(new ControllerPacket((byte) 0, gPadManager.getState(0)));
+                    ControllerState gPad1 = gPadManager.getState(0);
+
+
+                    connection.send(new ControllerPacket((byte) 0, gPad1));
                     connection.send(new ControllerPacket((byte) 1, gPadManager.getState(1)));
                 }
                 gPadManager.quitSDLGamepad();
