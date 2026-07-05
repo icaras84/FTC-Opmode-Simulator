@@ -1,8 +1,7 @@
-import org.jjophoven.fakehardware.FakeHardwareMap;
-import org.jjophoven.fakehardware.drivetrain.FakeMecanum;
-import org.jjophoven.input.ExampleCustomKeyBinds;
-import org.jjophoven.simulator.SimulationConfig;
-import org.jjophoven.fakehardware.drivetrain.MecanumConfig;
+import org.jjophoven.simhardware.SimHardwareMap;
+import org.jjophoven.simhardware.drivetrain.SimulatedMecanum;
+import org.jjophoven.simulator.SimConfig;
+import org.jjophoven.simhardware.drivetrain.SimMecanumConfig;
 import org.jjophoven.input.DefaultKeybinds;
 import org.jjophoven.simulator.DriverStationSimulator;
 import org.junit.Test;
@@ -11,33 +10,33 @@ import java.io.IOException;
 public class SimulateMecanum {
     @Test
     public void test() throws IOException, InterruptedException {
-        SimulationConfig simulationConfig = new SimulationConfig();
-        FakeHardwareMap fakeHardwareMap = new FakeHardwareMap();
+        SimHardwareMap simHardwareMap = new SimHardwareMap();
 
-        MecanumConfig mecanumConfig = new MecanumConfig();
+        SimMecanumConfig mecanumConfig = new SimMecanumConfig();
         mecanumConfig.frontLeftMotorName = "frontLeft";
         mecanumConfig.frontRightMotorName = "frontRight";
         mecanumConfig.backLeftMotorName = "backLeft";
         mecanumConfig.backRightMotorName = "backRight";
-        mecanumConfig.wheelbase = 9.5767; // distance from center of frontLeft wheel to backLeft wheel
-        mecanumConfig.trackWidth = 8.66142; // distance from center of backRight wheel to backLeft wheel
-        mecanumConfig.wheelRadius = 3.77953 / 2;
+        mecanumConfig.wheelbase = 9.37008;
+        mecanumConfig.trackWidth = 9.13386;
+        mecanumConfig.wheelRadius = 1.889765;
         mecanumConfig.staticVelocityRegion = 2;
         mecanumConfig.staticFriction = 45;
-        mecanumConfig.maxAcceleration = 250;
-        mecanumConfig.maxVelocity = 89.272;
+        mecanumConfig.maxAcceleration = 200;
+        mecanumConfig.maxVelocity = 70;
         mecanumConfig.naturalDeceleration = 40;
         mecanumConfig.strafeEfficiency = 0.90;
-        mecanumConfig.fakeHardwareMap = fakeHardwareMap;
+        mecanumConfig.simHardwareMap = simHardwareMap;
 
-        fakeHardwareMap.setDrivetrain(new FakeMecanum(mecanumConfig));
+        simHardwareMap.setDrivetrain(new SimulatedMecanum(mecanumConfig));
+        simHardwareMap.pinpoint("pinpoint");
 
-        simulationConfig.gamepad1Keybinds = new ExampleCustomKeyBinds();
-        simulationConfig.gamepad2Keybinds = new ExampleCustomKeyBinds();
-        simulationConfig.fakeHardwareMap = fakeHardwareMap;
+        SimConfig simConfig = new SimConfig();
+        simConfig.gamepad1Keybinds = new DefaultKeybinds();
+        simConfig.gamepad2Keybinds = new DefaultKeybinds();
+        simConfig.simHardwareMap = simHardwareMap;
+        simConfig.loopTimeMs = 20;
 
-        fakeHardwareMap.pinpoint("pinpoint");
-
-        DriverStationSimulator driverStation = new DriverStationSimulator(simulationConfig);
+        DriverStationSimulator driverStation = new DriverStationSimulator(simConfig);
     }
 }
