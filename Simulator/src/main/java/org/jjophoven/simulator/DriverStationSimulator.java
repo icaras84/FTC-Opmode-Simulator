@@ -20,6 +20,7 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 // TODO simulate rolling and colliding game pieces,
@@ -323,7 +324,7 @@ public class DriverStationSimulator {
     }
 
     private static Process startDriverStationProcess() throws IOException {
-        File projectRoot = findProjectRoot();
+        File projectRoot = getProjectRoot();
         File driverStationJar = new File(projectRoot,
                 "DriverStationWindow/build/libs/DriverStationWindow.jar");
 
@@ -362,13 +363,13 @@ public class DriverStationSimulator {
      */
     private static void buildDriverStationJar(File projectRoot) throws IOException {
         System.out.println("[DriverStation] Building DriverStationWindow JAR (this happens once)...");
+        System.out.println("[DriverStation] Project root: " + projectRoot.getAbsolutePath());
 
-        File gradlew = new File(projectRoot, isWindows() ? "gradlew.bat" : "gradlew");
         Process buildProcess = new ProcessBuilder(
-                gradlew.getAbsolutePath(),
+                isWindows() ? "gradlew.bat" : "gradlew",
                 ":DriverStationWindow:build"
         )
-                .directory(projectRoot)
+                .directory(new File(Objects.requireNonNull(System.getProperty("user.dir"))).getParentFile())
                 .redirectErrorStream(true)
                 .start();
 
@@ -411,22 +412,22 @@ public class DriverStationSimulator {
         return isWindows() ? "java.exe" : "java";
     }
 
-    private static File findProjectRoot() throws IOException {
-        File dir = new File(System.getProperty("user.dir")).getAbsoluteFile();
+    private static File getProjectRoot() {
+        return new File(Objects.requireNonNull(System.getProperty("user.dir"))).getParentFile();
+    }
 
-        while (dir != null) {
-
-            File gradlew = new File(dir, isWindows() ? "gradlew.bat" : "gradlew");
-            File settings = new File(dir, "settings.gradle");
-
-            if (gradlew.exists() && settings.exists()) {
-                return dir;
-            }
-
-            dir = dir.getParentFile();
+    private static boolean isProjectRoot(File dir) {
+        if (!dir.isDirectory()) {
+            return false;
         }
 
-        throw new IOException("Could not locate project root.");
+        File gradlew = new File(dir, isWindows() ? "gradlew.bat" : "gradlew");
+
+        File settingsGradle = new File(dir, "settings.gradle");
+        File settingsGradleKts = new File(dir, "settings.gradle.kts");
+
+        return gradlew.exists()
+                && (settingsGradle.exists() || settingsGradleKts.exists());
     }
 
     private static boolean isWindows() {
