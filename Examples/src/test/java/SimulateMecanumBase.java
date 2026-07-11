@@ -4,7 +4,7 @@ import org.codeblooded.simulator.RobotGeometry;
 import org.codeblooded.simulator.SimConfig;
 import org.codeblooded.simhardware.drivetrain.SimMecanumConfig;
 import org.codeblooded.input.DefaultKeybinds;
-import org.codeblooded.simulator.DriverStationSimulator;
+import org.codeblooded.simulator.FTCodeSim;
 import org.junit.Test;
 import java.io.IOException;
 
@@ -39,6 +39,7 @@ public class SimulateMecanumBase {
         simConfig.loopTimeMs = 20;
         simConfig.robotGeometry = new RobotGeometry(18, 18, 0, 0);
 
-        DriverStationSimulator driverStation = new DriverStationSimulator(simConfig);
+        FTCodeSim sim = new FTCodeSim(simConfig);
+        sim.run();
     }
 }

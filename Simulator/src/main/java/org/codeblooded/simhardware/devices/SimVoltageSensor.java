@@ -2,7 +2,6 @@ package org.codeblooded.simhardware.devices;
 
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 
-// TODO add voltage sensor noise
 public class SimVoltageSensor implements VoltageSensor, SimHardwareDevice {
     @Override
     public double getVoltage() {
@@ -41,6 +40,6 @@ public class SimVoltageSensor implements VoltageSensor, SimHardwareDevice {
 
     @Override
     public void update(double deltaTime) {
-
+        // add noise if you want that instability
     }
 }

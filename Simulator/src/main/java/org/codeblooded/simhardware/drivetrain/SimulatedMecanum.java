@@ -11,8 +11,6 @@ public class SimulatedMecanum extends SimulatedDrivetrain {
     private final double wheelRadius;
     private final double strafeEfficiency;
 
-    // TODO different decel for strafing
-
     public SimulatedMecanum(SimMecanumConfig config) {
         super(config, config.frontLeftMotorName, config.frontRightMotorName, config.backLeftMotorName, config.backRightMotorName);
 

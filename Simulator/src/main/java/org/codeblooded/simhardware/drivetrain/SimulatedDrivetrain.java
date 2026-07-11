@@ -51,13 +51,9 @@ public abstract class SimulatedDrivetrain {
         return config.simHardwareMap.motor(motorConfig);
     }
 
-    // TODO setVelocity for collisions
-
     public void step(double deltaTime) {
         boolean allMotorsStationary = true;
         for (int i = 0; i < motors.length; i++) {
-            //motors[i].step(deltaTime);
-
             SimMotor motor = motors[i];
             motorAngularVelocities[i] = motor.getVelocity();
 
@@ -79,12 +75,7 @@ public abstract class SimulatedDrivetrain {
         position = position.step(velocity, deltaTime);
 
         velocity.log("Mecanum/velocity");
-
-        // Accounts for wheels moving from whole robot moving
-        motorAngularVelocities = inverseKinematics(velocity.toRobotFrame(position.theta));
-        for (int i = 0; i < motors.length; i++) {
-            motors[i].setRollVelocity(motorAngularVelocities[i]);
-        }
+        updateWheelRollVelocities();
 
         // TODO maybe make it more accurate by calculating rolling accel?
 
@@ -97,6 +88,10 @@ public abstract class SimulatedDrivetrain {
 
     public void setLinearVel(MotionVector velocity) {
         this.velocity = new MotionVector(velocity.x, velocity.y, this.velocity.theta);
+        updateWheelRollVelocities();
+    }
+
+    public void updateWheelRollVelocities() {
         // Accounts for wheels moving from whole robot moving
         motorAngularVelocities = inverseKinematics(velocity.toRobotFrame(position.theta));
         for (int i = 0; i < motors.length; i++) {

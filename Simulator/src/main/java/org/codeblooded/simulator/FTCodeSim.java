@@ -5,8 +5,6 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.Gamepad;
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.codeblooded.driverstation.packets.*;
 import org.codeblooded.simhardware.SimHardwareMap;
@@ -28,7 +26,7 @@ import java.util.Set;
 // TODO modify ascope state for less user setup
 // add default code blooded robot models?
 // automatically download and open ascope on run?
-public class DriverStationSimulator {
+public class FTCodeSim {
     private static final int PORT = 8080;
 
     private ServerSocket listener;
@@ -48,8 +46,9 @@ public class DriverStationSimulator {
     SimConfig config;
     FtcLoggingSession psiKit;
 
+    // TODO create a way to select from multiply "simulated" robots
     @RequiresApi(api = Build.VERSION_CODES.O)
-    public DriverStationSimulator(SimConfig config) throws IOException, InterruptedException {
+    public FTCodeSim(SimConfig config) throws IOException {
         this.gamepad1Keybinds = config.gamepad1Keybinds;
         this.gamepad2Keybinds = config.gamepad2Keybinds;
         this.config = config;
@@ -57,7 +56,10 @@ public class DriverStationSimulator {
 
         startServer();
         acceptClient();
+    }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    public void run() throws IOException, InterruptedException {
         while (driverStationWindow.isAlive()) {
             OpMode selectedOpMode = waitForOpModeInit();
             if (selectedOpMode == null) {
@@ -98,26 +100,36 @@ public class DriverStationSimulator {
 
     public @Nullable OpMode waitForOpModeInit() throws IOException, InterruptedException {
         OpMode selectedOpMode = null;
-        while (in.available() > 0) {
-            switch (in.readByte()) {
-                case Packet.STATE:
-                    this.state = OpModeState.read(in);
-                    if (this.state == null) {
-                        close();
-                        return null;
-                    }
-                    if (this.state == OpModeState.INITIALIZING) {
-                        return selectedOpMode;
-                    }
-                    break;
-                case Packet.OPMODE:
-                    OpModePacket packet = OpModePacket.read(in);
-                    selectedOpMode = opModeRegister.getOpMode(packet);
-                    break;
+
+        while (true) {
+            while (in.available() > 0) {
+                switch (in.readByte()) {
+                    case Packet.STATE:
+                        state = OpModeState.read(in);
+
+                        if (state == null) {
+                            close();
+                            return null;
+                        }
+
+                        if (state == OpModeState.INITIALIZING) {
+                            return selectedOpMode;
+                        }
+                        break;
+
+                    case Packet.OPMODE:
+                        OpModePacket packet = OpModePacket.read(in);
+                        selectedOpMode = opModeRegister.getOpMode(packet);
+                        break;
+                }
             }
+
+            if (!driverStationWindow.isAlive()) {
+                return null;
+            }
+
+            Thread.sleep(config.loopTimeMs);
         }
-        Thread.sleep(config.loopTimeMs);
-        return waitForOpModeInit();
     }
 
     public void wrap(Runnable runnable, OpMode opMode, FtcLoggingSession loggingSession) throws InterruptedException {
@@ -171,6 +183,7 @@ public class DriverStationSimulator {
     private final Set<Integer> heldKeys = new HashSet<>();
 
     private long previousTime = 0;
+    public MotionVector previousLegalPose = new MotionVector(141.5/2, 141.5/2, 0);
 
     public void updateHardware() {
         long currentTime = System.nanoTime();
@@ -180,11 +193,11 @@ public class DriverStationSimulator {
 
         Pose2D pose = simHardwareMap.getDrivetrain().getActualPose();
         RobotGeometry robot = config.robotGeometry;
-        MotionVector currentPose = new MotionVector(pose.getX(DistanceUnit.INCH), pose.getY(DistanceUnit.INCH), pose.getHeading(AngleUnit.RADIANS));
+        MotionVector currentPose = MotionVector.fromPose2D(pose);
         boolean isOutOfBounds = FieldBoundary.isOutOfBounds(currentPose, robot);
 
         if (isOutOfBounds) {
-            MotionVector closest = FieldBoundary.closestInBoundsPosition(currentPose, robot);
+            MotionVector closest = FieldBoundary.closestInBoundsPosition(previousLegalPose, currentPose, robot);
 
             MotionVector correctionDir = currentPose.minus(closest);
 
@@ -202,8 +215,12 @@ public class DriverStationSimulator {
                 simHardwareMap.getDrivetrain().setLinearVel(correctedVelocity);
             }
         }
+        else {
+            previousLegalPose = currentPose;
+        }
 
         Logger.recordOutput("isInBounds", !isOutOfBounds);
+        previousLegalPose.log("previousLegalPose");
 
     }
 
@@ -324,7 +341,7 @@ public class DriverStationSimulator {
     }
 
     private static Process startDriverStationProcess() throws IOException {
-        File projectRoot = getProjectRoot();
+        File projectRoot = findProjectRoot();
         File driverStationJar = new File(projectRoot,
                 "DriverStationWindow/build/libs/DriverStationWindow.jar");
 
@@ -363,13 +380,13 @@ public class DriverStationSimulator {
      */
     private static void buildDriverStationJar(File projectRoot) throws IOException {
         System.out.println("[DriverStation] Building DriverStationWindow JAR (this happens once)...");
-        System.out.println("[DriverStation] Project root: " + projectRoot.getAbsolutePath());
 
+        File gradlew = new File(projectRoot, isWindows() ? "gradlew.bat" : "gradlew");
         Process buildProcess = new ProcessBuilder(
-                isWindows() ? "gradlew.bat" : "gradlew",
+                gradlew.getAbsolutePath(),
                 ":DriverStationWindow:build"
         )
-                .directory(new File(Objects.requireNonNull(System.getProperty("user.dir"))).getParentFile())
+                .directory(projectRoot)
                 .redirectErrorStream(true)
                 .start();
 
@@ -412,22 +429,8 @@ public class DriverStationSimulator {
         return isWindows() ? "java.exe" : "java";
     }
 
-    private static File getProjectRoot() {
+    private static File findProjectRoot() {
         return new File(Objects.requireNonNull(System.getProperty("user.dir"))).getParentFile();
-    }
-
-    private static boolean isProjectRoot(File dir) {
-        if (!dir.isDirectory()) {
-            return false;
-        }
-
-        File gradlew = new File(dir, isWindows() ? "gradlew.bat" : "gradlew");
-
-        File settingsGradle = new File(dir, "settings.gradle");
-        File settingsGradleKts = new File(dir, "settings.gradle.kts");
-
-        return gradlew.exists()
-                && (settingsGradle.exists() || settingsGradleKts.exists());
     }
 
     private static boolean isWindows() {

@@ -4,16 +4,16 @@ import org.codeblooded.simhardware.drivetrain.MotionVector;
 
 public class FieldBoundary {
     public static final MotionVector[] FIELD = {
-            new MotionVector(0, 0, 0),
-            new MotionVector(0, 68.8, 0),
-            new MotionVector(7.6, 68.8, 0),
-            new MotionVector(7.6, 118.8, 0),
-            new MotionVector(23.4, 141.3, 0),
-            new MotionVector(117.9, 141.3, 0),
-            new MotionVector(133.8, 118.8, 0),
-            new MotionVector(133.8, 68.8, 0),
-            new MotionVector(141.3, 68.8, 0),
-            new MotionVector(141.3, 0, 0)
+            new MotionVector(0, 0),
+            new MotionVector(0, 68.8),
+            new MotionVector(7.6, 68.8),
+            new MotionVector(7.6, 118.8),
+            new MotionVector(23.4, 141.3),
+            new MotionVector(117.9, 141.3),
+            new MotionVector(133.8, 118.8),
+            new MotionVector(133.8, 68.8),
+            new MotionVector(141.3, 68.8),
+            new MotionVector(141.3, 0)
     };
 
     public static boolean isOutOfBounds(
@@ -46,58 +46,141 @@ public class FieldBoundary {
     }
 
     public static MotionVector closestInBoundsPosition(
+            MotionVector previousLegalPose,
+            MotionVector desiredPose,
+            RobotGeometry robot
+    ) {
+        if (!isOutOfBounds(desiredPose, robot)) {
+            return desiredPose;
+        }
+
+        MotionVector closest = closestInBoundsPosition(desiredPose, robot); // i'm sorry i have two funcs
+        // TODO clean up concave collisions
+        if (!isOutOfBounds(closest, robot)) {
+            return closest;
+        }
+
+        double low = 0.0;
+        double high = 1.0;
+
+        for (int i = 0; i < 40; i++) {
+            double t = (low + high) * 0.5;
+
+            MotionVector test = interpolate(previousLegalPose, desiredPose, t);
+
+            if (isOutOfBounds(test, robot)) {
+                high = t;
+            } else {
+                low = t;
+            }
+        }
+
+        MotionVector result = interpolate(previousLegalPose, desiredPose, low);
+
+        // Move back a tiny amount for floating-point safety.
+        double dx = desiredPose.x - previousLegalPose.x;
+        double dy = desiredPose.y - previousLegalPose.y;
+
+        double len = Math.hypot(dx, dy);
+
+        if (len > 1e-9) {
+            final double EPS = 1e-4;
+
+            result = new MotionVector(
+                    result.x - dx / len * EPS,
+                    result.y - dy / len * EPS,
+                    result.theta
+            );
+        }
+
+        return result;
+    }
+
+    private static MotionVector interpolate(
+            MotionVector a,
+            MotionVector b,
+            double t
+    ) {
+        return new MotionVector(
+                a.x + (b.x - a.x) * t,
+                a.y + (b.y - a.y) * t,
+                a.theta + (b.theta - a.theta) * t
+        );
+    }
+
+    public static MotionVector closestInBoundsPosition(
             MotionVector pose,
             RobotGeometry robot
     ) {
         double x = pose.x;
         double y = pose.y;
 
-        final double EPS = 1e-6;
+        final double EPS = 1e-4;
 
-        for (int iter = 0; iter < 20; iter++) {
+        for (int iter = 0; iter < 100; iter++) {
 
-            MotionVector[] corners =
-                    robot.corners(new MotionVector(x, y, pose.theta));
+            MotionVector robotPose = new MotionVector(x, y, pose.theta);
 
-            boolean changed = false;
+            if (!isOutOfBounds(robotPose, robot)) {
+                return robotPose;
+            }
+
+            MotionVector[] corners = robot.corners(robotPose);
+
+            double bestPushX = 0;
+            double bestPushY = 0;
+            double largestPenetration = 0;
 
             for (MotionVector corner : corners) {
 
-                if (pointInsidePolygon(corner, FIELD))
+                if (pointInsidePolygon(corner, FIELD)) {
                     continue;
+                }
 
-                double bestDist = Double.POSITIVE_INFINITY;
-                double pushX = 0;
-                double pushY = 0;
+                double closestDistSq = Double.POSITIVE_INFINITY;
+                MotionVector closest = null;
 
                 for (int i = 0; i < FIELD.length; i++) {
 
                     MotionVector a = FIELD[i];
                     MotionVector b = FIELD[(i + 1) % FIELD.length];
 
-                    MotionVector closest =
-                            closestPointOnSegment(corner, a, b);
+                    MotionVector p = closestPointOnSegment(corner, a, b);
 
-                    double dx = closest.x - corner.x;
-                    double dy = closest.y - corner.y;
+                    double dx = p.x - corner.x;
+                    double dy = p.y - corner.y;
+
                     double distSq = dx * dx + dy * dy;
 
-                    if (distSq < bestDist) {
-                        bestDist = distSq;
-                        pushX = dx;
-                        pushY = dy;
+                    if (distSq < closestDistSq) {
+                        closestDistSq = distSq;
+                        closest = p;
                     }
                 }
 
-                x += pushX + Math.signum(pushX) * EPS;
-                y += pushY + Math.signum(pushY) * EPS;
-                changed = true;
+                if (closest != null) {
+
+                    double dx = closest.x - corner.x;
+                    double dy = closest.y - corner.y;
+
+                    double dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist > largestPenetration) {
+                        largestPenetration = dist;
+                        bestPushX = dx;
+                        bestPushY = dy;
+                    }
+                }
             }
 
-            if (!changed &&
-                    !isOutOfBounds(new MotionVector(x, y, pose.theta), robot)) {
+            if (largestPenetration < EPS) {
                 break;
             }
+
+            double len = Math.sqrt(bestPushX * bestPushX + bestPushY * bestPushY);
+
+            x += bestPushX + (bestPushX / len) * EPS;
+            y += bestPushY + (bestPushY / len) * EPS;
         }
 
         return new MotionVector(x, y, pose.theta);

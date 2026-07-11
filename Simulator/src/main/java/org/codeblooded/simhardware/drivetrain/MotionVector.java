@@ -24,6 +24,10 @@ public class MotionVector {
         this.theta = 0;
     }
 
+    public static MotionVector fromPose2D(Pose2D pose) {
+        return new MotionVector(pose.getX(DistanceUnit.INCH), pose.getY(DistanceUnit.INCH), pose.getHeading(AngleUnit.RADIANS));
+    }
+
     public double dot(MotionVector other) {
         return this.x * other.x + this.y * other.y;
     }

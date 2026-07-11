@@ -2,7 +2,7 @@ import org.codeblooded.input.DefaultKeybinds;
 import org.codeblooded.simhardware.SimHardwareMap;
 import org.codeblooded.simhardware.drivetrain.SimMecanumConfig;
 import org.codeblooded.simhardware.drivetrain.SimulatedMecanum;
-import org.codeblooded.simulator.DriverStationSimulator;
+import org.codeblooded.simulator.FTCodeSim;
 import org.codeblooded.simulator.RobotGeometry;
 import org.codeblooded.simulator.SimConfig;
 import org.junit.Test;
@@ -25,9 +25,9 @@ public class SimulateCodeBloodedDecode {
         mecanumConfig.staticVelocityRegion = 2;
         mecanumConfig.staticFriction = 45;
         mecanumConfig.maxAcceleration = 150;
-        mecanumConfig.maxVelocity = 70;
+        mecanumConfig.maxVelocity = 75;
         mecanumConfig.naturalDeceleration = 40;
-        mecanumConfig.strafeEfficiency = 0.90;
+        mecanumConfig.strafeEfficiency = 0.80;
         mecanumConfig.simHardwareMap = simHardwareMap;
 
         simHardwareMap.setDrivetrain(new SimulatedMecanum(mecanumConfig));
@@ -40,6 +40,7 @@ public class SimulateCodeBloodedDecode {
         simConfig.loopTimeMs = 20;
         simConfig.robotGeometry = new RobotGeometry(12, 18, 2, 0);
 
-        DriverStationSimulator driverStation = new DriverStationSimulator(simConfig);
+        FTCodeSim sim = new FTCodeSim(simConfig);
+        sim.run();
     }
 }

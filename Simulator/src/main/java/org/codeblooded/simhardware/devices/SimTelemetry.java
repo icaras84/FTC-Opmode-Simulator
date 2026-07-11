@@ -2,12 +2,12 @@ package org.codeblooded.simhardware.devices;
 
 import org.firstinspires.ftc.robotcore.external.Func;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.codeblooded.simulator.DriverStationSimulator;
+import org.codeblooded.simulator.FTCodeSim;
 
 public class SimTelemetry implements Telemetry {
-    private final DriverStationSimulator driverStation;
+    private final FTCodeSim driverStation;
 
-    public SimTelemetry(DriverStationSimulator driverStation) {
+    public SimTelemetry(FTCodeSim driverStation) {
         this.driverStation = driverStation;
     }
 
