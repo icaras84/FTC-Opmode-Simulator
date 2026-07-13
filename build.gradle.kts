@@ -1,3 +1,6 @@
+import org.gradle.api.plugins.JavaPluginExtension
+import org.gradle.jvm.toolchain.JavaLanguageVersion
+
 run {
     val runDriverStationWindowReference = gradle.includedBuild("DriverStationWindow").task(":run")
 

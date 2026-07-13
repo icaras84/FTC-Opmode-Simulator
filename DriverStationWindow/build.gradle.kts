@@ -2,6 +2,7 @@ plugins {
     id("dev.frozenmilk.jvm-library") version "11.1.0-1.1.1"
     id("dev.frozenmilk.publish") version "0.0.5"
     id("dev.frozenmilk.doc") version "0.0.5"
+    id("com.github.johnrengelman.shadow") version "8.1.1"
     application
 }
 
@@ -14,10 +15,25 @@ dependencies {
     implementation("com.github.kwhat:jnativehook:2.2.2")
 }
 
+//
+//tasks.build {
+//    dependsOn(tasks.shadowJar)
+//}
+
+tasks.shadowJar {
+    archiveBaseName.set("DriverStationWindow")
+    archiveVersion.set("")
+    archiveClassifier.set("")
+
+    manifest {
+        attributes["Main-Class"] = "org.codeblooded.driverstation.DriverStationWindow"
+    }
+}
+
 publishing {
     publications {
         register<MavenPublication>("release") {
-            groupId = "ord.codeblooded"
+            groupId = "org.codeblooded"
             artifactId = "DriverStationWindow"
 
             artifact(dairyDoc.dokkaJavadocJar)
@@ -31,11 +47,11 @@ publishing {
 }
 
 application {
-    mainClass = "org.jjophoven.driverstation.DriverStationWindow"
+    mainClass = "org.codeblooded.driverstation.DriverStationWindow"
 }
 
 java {
     manifest {
-        attributes["Main-Class"] = "org.jjophoven.driverstation.DriverStationWindow"
+        attributes["Main-Class"] = "org.codeblooded.driverstation.DriverStationWindow"
     }
 }

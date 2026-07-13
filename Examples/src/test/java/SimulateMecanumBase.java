@@ -1,17 +1,18 @@
-import org.jjophoven.simhardware.SimHardwareMap;
-import org.jjophoven.simhardware.drivetrain.SimulatedMecanum;
-import org.jjophoven.simulator.RobotGeometry;
-import org.jjophoven.simulator.SimConfig;
-import org.jjophoven.simhardware.drivetrain.SimMecanumConfig;
-import org.jjophoven.input.DefaultKeybinds;
-import org.jjophoven.simulator.DriverStationSimulator;
+import org.codeblooded.ftcodesim.hardware.SimHardwareMap;
+import org.codeblooded.ftcodesim.hardware.drivetrain.SimulatedMecanum;
+import org.codeblooded.ftcodesim.physics.RobotGeometry;
+import org.codeblooded.ftcodesim.simulator.SimConfig;
+import org.codeblooded.ftcodesim.hardware.drivetrain.SimMecanumConfig;
+import org.codeblooded.ftcodesim.input.DefaultKeybinds;
+import org.codeblooded.ftcodesim.simulator.FTCodeSim;
 import org.junit.Test;
 import java.io.IOException;
 
 public class SimulateMecanumBase {
     @Test
     public void test() throws IOException, InterruptedException {
-        SimHardwareMap simHardwareMap = new SimHardwareMap();
+        RobotGeometry robotGeometry = new RobotGeometry(18, 18, 0, 0);
+        SimHardwareMap simHardwareMap = new SimHardwareMap(robotGeometry);
 
         SimMecanumConfig mecanumConfig = new SimMecanumConfig();
         mecanumConfig.frontLeftMotorName = "frontLeft";
@@ -37,8 +38,8 @@ public class SimulateMecanumBase {
         simConfig.gamepad2Keybinds = new DefaultKeybinds();
         simConfig.simHardwareMap = simHardwareMap;
         simConfig.loopTimeMs = 20;
-        simConfig.robotGeometry = new RobotGeometry(18, 18, 0, 0);
 
-        DriverStationSimulator driverStation = new DriverStationSimulator(simConfig);
+        FTCodeSim sim = new FTCodeSim(simConfig);
+        sim.run();
     }
 }

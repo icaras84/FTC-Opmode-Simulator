@@ -1,17 +1,18 @@
-import org.jjophoven.simhardware.SimHardwareMap;
-import org.jjophoven.simhardware.drivetrain.SimulatedTank;
-import org.jjophoven.simhardware.drivetrain.SimTankConfig;
-import org.jjophoven.simulator.RobotGeometry;
-import org.jjophoven.simulator.SimConfig;
-import org.jjophoven.input.DefaultKeybinds;
-import org.jjophoven.simulator.DriverStationSimulator;
+import org.codeblooded.ftcodesim.hardware.SimHardwareMap;
+import org.codeblooded.ftcodesim.hardware.drivetrain.SimulatedTank;
+import org.codeblooded.ftcodesim.hardware.drivetrain.SimTankConfig;
+import org.codeblooded.ftcodesim.physics.RobotGeometry;
+import org.codeblooded.ftcodesim.simulator.SimConfig;
+import org.codeblooded.ftcodesim.input.DefaultKeybinds;
+import org.codeblooded.ftcodesim.simulator.FTCodeSim;
 import org.junit.Test;
 import java.io.IOException;
 
-public class SimulateTank { // TODO create a way to tag what opmodes are using which drivetrain
+public class SimulateTank {
     @Test
     public void test() throws IOException, InterruptedException {
-        SimHardwareMap simHardwareMap = new SimHardwareMap();
+        RobotGeometry robotGeometry = new RobotGeometry(18, 18, 0, 0);
+        SimHardwareMap simHardwareMap = new SimHardwareMap(robotGeometry);
 
         SimTankConfig config = new SimTankConfig();
         config.frontLeftMotorName = "frontLeft";
@@ -35,8 +36,8 @@ public class SimulateTank { // TODO create a way to tag what opmodes are using w
         simConfig.gamepad2Keybinds = new DefaultKeybinds();
         simConfig.simHardwareMap = simHardwareMap;
         simConfig.loopTimeMs = 20;
-        simConfig.robotGeometry = new RobotGeometry(18, 18, 0, 0);
 
-        DriverStationSimulator driverStation = new DriverStationSimulator(simConfig);
+        FTCodeSim sim = new FTCodeSim(simConfig);
+        sim.run();
     }
 }
