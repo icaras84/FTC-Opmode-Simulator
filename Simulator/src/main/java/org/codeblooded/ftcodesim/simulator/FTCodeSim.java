@@ -1,14 +1,13 @@
 package org.codeblooded.ftcodesim.simulator;
 
 import android.os.Build;
-import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import org.codeblooded.driverstation.OpModeState;
 import org.codeblooded.driverstation.packets.*;
 import org.codeblooded.ftcodesim.hardware.SimHardwareMap;
 import org.codeblooded.ftcodesim.hardware.devices.SimTelemetry;
 import org.codeblooded.ftcodesim.input.Keybinds;
-import org.psilynx.psikit.ftc.FtcLoggingSession;
 
 import java.io.*;
 import java.net.ServerSocket;
@@ -55,7 +54,7 @@ public class FTCodeSim {
         startServer();
         acceptClient();
         new Thread(() -> {
-            while (driverStationWindow.isAlive()) {
+            while (windowIsRunning()) {
                 readPackets();
                 try {
                     Thread.sleep(20);
@@ -66,19 +65,20 @@ public class FTCodeSim {
         }, "DS INPUT").start();
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
     public void run() throws InterruptedException {
-        while (driverStationWindow.isAlive()) {
-            waitForOpModeInit();
+        while (windowIsRunning()) {
+            if (opModeLifecycle == null) {
+                Thread.sleep(config.loopTimeMs);
+                continue;
+            }
             opModeLifecycle.runOpMode();
+            opModeLifecycle = null;
         }
         close();
     }
 
-    public void waitForOpModeInit() throws InterruptedException {
-        while (driverStationWindow.isAlive() && (state == OpModeState.WAIT_FOR_INIT || state == null || opModeLifecycle == null)) {
-            Thread.sleep(config.loopTimeMs);
-        }
+    public boolean windowIsRunning() {
+        return driverStationWindow.isAlive();
     }
 
     public void startServer() throws IOException {
@@ -145,27 +145,19 @@ public class FTCodeSim {
                         }
 
                         break;
-                    case Packet.STATE:
-                        this.state = OpModeState.read(in);
-                        System.out.println("RECEIVED STATE: " + this.state);
+                    case Packet.OPMODE_COMMAND:
+                        OpModeCommandPacket command = OpModeCommandPacket.read(in);
+                        System.out.println("RECEIVED COMMAND: " + command);
 
-                        if (state == null) {
-                            opModeLifecycle.isStopped = true;
-                            opModeLifecycle.isStarted = false;
-                            close();
-                        }
-                        if (state == OpModeState.RUNNING) {
-                            System.out.println("RUNNING ");
+                        if (command.equals(OpModeCommandPacket.START)) {
                             opModeLifecycle.isStarted = true;
-                            opModeLifecycle.isStopped = false;
                         }
-                        if (state == OpModeState.WAIT_FOR_INIT) {
-                            opModeLifecycle.isStarted = false;
+                        if (command.equals(OpModeCommandPacket.STOP)) {
                             opModeLifecycle.isStopped = true;
                         }
                         break;
-                    case Packet.OPMODE:
-                        OpModePacket packet = OpModePacket.read(in);
+                    case Packet.INIT_OPMODE:
+                        InitOpModePacket packet = InitOpModePacket.read(in);
                         OpMode selectedOpMode = opModeRegister.getOpMode(packet);
                         System.out.println("RECEIVED OPMODE " + selectedOpMode.getClass().getSimpleName());
                         opModeLifecycle = new OpModeLifecycle(selectedOpMode, telemetry, simHardwareMap, config.loopTimeMs);
@@ -213,9 +205,6 @@ public class FTCodeSim {
         }
 
         state = null;
-//        if (opMode != null) {
-//            opMode.stop();
-//        }
 
         log("Driver Station shutdown.");
     }

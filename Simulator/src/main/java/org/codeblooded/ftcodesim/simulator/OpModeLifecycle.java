@@ -10,12 +10,14 @@ import org.psilynx.psikit.core.Logger;
 public class OpModeLifecycle {
     public volatile boolean isStarted = false;
     public volatile boolean isStopped = false;
+    public volatile byte[] latestGamepad1Data = new Gamepad().toByteArray();
+    public volatile byte[] latestGamepad2Data = new Gamepad().toByteArray();
+
     OpMode opMode;
     SimHardwareMap simHardwareMap;
     SimTelemetry telemetry;
     long loopTimeMs;
-    volatile byte[] latestGamepad1Data = new Gamepad().toByteArray();
-    volatile byte[] latestGamepad2Data = new Gamepad().toByteArray();
+    SimFtcLogger ftcLog;
 
     public OpModeLifecycle(OpMode opMode, SimTelemetry telemetry, SimHardwareMap simHardwareMap, long loopTimeMs) {
         this.opMode = opMode;
@@ -37,24 +39,24 @@ public class OpModeLifecycle {
         long start = System.nanoTime();
         Logger.setTimeSource(() -> (System.nanoTime() - start) * 1e-9);
 
-        opMode.init(); // TODO wrap this with internals
+        wrap(opMode::init);
 
         while (!isStarted && !isStopped) {
-            wrap(opMode::init_loop, opMode, ftcLog);
+            wrap(opMode::init_loop);
         }
 
-        opMode.start();
+        wrap(opMode::start);
 
         while (!isStopped) {
-            wrap(opMode::loop, opMode, ftcLog);
+            wrap(opMode::loop);
         }
 
-        opMode.stop();
+        wrap(opMode::stop);
 
         Logger.end();
     }
 
-    public void wrap(Runnable runnable, OpMode opMode, SimFtcLogger ftcLog) throws InterruptedException {
+    public void wrap(Runnable runnable) throws InterruptedException {
         long loopStart = System.nanoTime();
 
         // FTC SDK's internalPreUserCode
