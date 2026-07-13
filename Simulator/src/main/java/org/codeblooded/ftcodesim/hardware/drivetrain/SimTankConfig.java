@@ -1,4 +1,4 @@
-package org.codeblooded.simhardware.drivetrain;
+package org.codeblooded.ftcodesim.hardware.drivetrain;
 
 public class SimTankConfig extends SimDrivetrainConfig {
     public String frontLeftMotorName;

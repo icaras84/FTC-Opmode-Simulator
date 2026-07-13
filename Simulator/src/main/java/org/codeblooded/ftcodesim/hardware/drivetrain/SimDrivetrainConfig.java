@@ -1,6 +1,6 @@
-package org.codeblooded.simhardware.drivetrain;
+package org.codeblooded.ftcodesim.hardware.drivetrain;
 
-import org.codeblooded.simhardware.SimHardwareMap;
+import org.codeblooded.ftcodesim.hardware.SimHardwareMap;
 
 public abstract class SimDrivetrainConfig {
     public SimHardwareMap simHardwareMap;

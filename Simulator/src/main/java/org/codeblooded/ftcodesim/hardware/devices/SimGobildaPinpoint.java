@@ -1,4 +1,4 @@
-package org.codeblooded.simhardware.devices;
+package org.codeblooded.ftcodesim.hardware.devices;
 
 import androidx.annotation.Nullable;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
@@ -9,8 +9,8 @@ import com.qualcomm.robotcore.hardware.TimestampedData;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
-import org.codeblooded.simhardware.drivetrain.MotionVector;
-import org.codeblooded.simhardware.drivetrain.SimulatedDrivetrain;
+import org.codeblooded.ftcodesim.physics.MotionVector;
+import org.codeblooded.ftcodesim.hardware.drivetrain.SimulatedDrivetrain;
 
 public class SimGobildaPinpoint extends GoBildaPinpointDriver implements SimHardwareDevice {
     private final SimulatedDrivetrain drivetrain;

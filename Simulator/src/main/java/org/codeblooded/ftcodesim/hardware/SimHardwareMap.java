@@ -1,14 +1,24 @@
-package org.codeblooded.simhardware;
+package org.codeblooded.ftcodesim.hardware;
 
 import androidx.annotation.Nullable;
 import com.qualcomm.robotcore.hardware.*;
-import org.codeblooded.simhardware.devices.*;
-import org.codeblooded.simhardware.drivetrain.SimulatedDrivetrain;
+import org.codeblooded.ftcodesim.hardware.devices.*;
+import org.codeblooded.ftcodesim.physics.FieldBoundary;
+import org.codeblooded.ftcodesim.physics.MotionVector;
+import org.codeblooded.ftcodesim.physics.RobotGeometry;
+import org.codeblooded.ftcodesim.hardware.devices.*;
+import org.codeblooded.ftcodesim.hardware.drivetrain.SimulatedDrivetrain;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
+import org.psilynx.psikit.core.Logger;
 
 import java.util.List;
 
 public class SimHardwareMap extends HardwareMap {
     private SimulatedDrivetrain drivetrain;
+    private long previousTime = System.nanoTime();
+    private MotionVector previousLegalPose = new MotionVector(0, 0, 0);
+    double deltaTime;
+    RobotGeometry robotGeometry;
 
     public SimulatedDrivetrain getDrivetrain() {
         return drivetrain;
@@ -18,8 +28,10 @@ public class SimHardwareMap extends HardwareMap {
         this.drivetrain = drivetrain;
     }
 
-    public SimHardwareMap() {
+    public SimHardwareMap(RobotGeometry robotGeometry) {
         super(null, null);
+        this.robotGeometry = robotGeometry;
+
         SimVoltageSensor voltageSensor = new SimVoltageSensor();
 
         // TODO automatically do this for every device
@@ -68,7 +80,9 @@ public class SimHardwareMap extends HardwareMap {
         return device;
     }
 
-    public void update(double deltaTime) {
+    public void update() {
+        updateDeltaTime();
+
         for (List<HardwareDevice> device : allDevicesMap.values()) {
             for (HardwareDevice d : device) {
                 try {
@@ -80,5 +94,42 @@ public class SimHardwareMap extends HardwareMap {
         if (drivetrain != null) {
             drivetrain.step(deltaTime);
         }
+
+        Pose2D pose = getDrivetrain().getActualPose();
+        RobotGeometry robot = robotGeometry;
+        MotionVector currentPose = MotionVector.fromPose2D(pose);
+        boolean isOutOfBounds = FieldBoundary.isOutOfBounds(currentPose, robot);
+
+        if (isOutOfBounds) {
+            MotionVector closest = FieldBoundary.closestInBoundsPosition(previousLegalPose, currentPose, robot);
+
+            MotionVector correctionDir = currentPose.minus(closest);
+
+            if (correctionDir.magnitude() > 1e-6) {
+
+                MotionVector normal = correctionDir.unitVector();
+
+                MotionVector velocity = getDrivetrain().velocity;
+
+                double vOut = velocity.dot(normal);
+
+                MotionVector correctedVelocity = velocity.minus(normal.scale(vOut));
+
+                getDrivetrain().setPosition(closest);
+                getDrivetrain().setLinearVel(correctedVelocity);
+            }
+        }
+        else {
+            previousLegalPose = currentPose;
+        }
+
+        Logger.recordOutput("isInBounds", !isOutOfBounds);
+        previousLegalPose.log("previousLegalPose");
+    }
+
+    private void updateDeltaTime() {
+        long currentTime = System.nanoTime();
+        deltaTime = (currentTime - previousTime) * 1e-9;
+        previousTime = currentTime;
     }
 }

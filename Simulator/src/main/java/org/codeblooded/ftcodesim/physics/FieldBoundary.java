@@ -1,9 +1,7 @@
-package org.codeblooded.simulator;
-
-import org.codeblooded.simhardware.drivetrain.MotionVector;
+package org.codeblooded.ftcodesim.physics;
 
 public class FieldBoundary {
-    public static final MotionVector[] FIELD = {
+    public static final MotionVector[] DECODE_FIELD = {
             new MotionVector(0, 0),
             new MotionVector(0, 68.8),
             new MotionVector(7.6, 68.8),
@@ -23,7 +21,7 @@ public class FieldBoundary {
         MotionVector[] corners = robot.corners(pose);
 
         for (MotionVector p : corners) {
-            if (!pointInsidePolygon(p, FIELD)) {
+            if (!pointInsidePolygon(p, DECODE_FIELD)) {
                 return true;
             }
         }
@@ -32,9 +30,9 @@ public class FieldBoundary {
             MotionVector a1 = corners[i];
             MotionVector a2 = corners[(i + 1) % 4];
 
-            for (int j = 0; j < FIELD.length; j++) {
-                MotionVector b1 = FIELD[j];
-                MotionVector b2 = FIELD[(j + 1) % FIELD.length];
+            for (int j = 0; j < DECODE_FIELD.length; j++) {
+                MotionVector b1 = DECODE_FIELD[j];
+                MotionVector b2 = DECODE_FIELD[(j + 1) % DECODE_FIELD.length];
 
                 if (segmentsIntersect(a1, a2, b1, b2)) {
                     return true;
@@ -133,17 +131,17 @@ public class FieldBoundary {
 
             for (MotionVector corner : corners) {
 
-                if (pointInsidePolygon(corner, FIELD)) {
+                if (pointInsidePolygon(corner, DECODE_FIELD)) {
                     continue;
                 }
 
                 double closestDistSq = Double.POSITIVE_INFINITY;
                 MotionVector closest = null;
 
-                for (int i = 0; i < FIELD.length; i++) {
+                for (int i = 0; i < DECODE_FIELD.length; i++) {
 
-                    MotionVector a = FIELD[i];
-                    MotionVector b = FIELD[(i + 1) % FIELD.length];
+                    MotionVector a = DECODE_FIELD[i];
+                    MotionVector b = DECODE_FIELD[(i + 1) % DECODE_FIELD.length];
 
                     MotionVector p = closestPointOnSegment(corner, a, b);
 

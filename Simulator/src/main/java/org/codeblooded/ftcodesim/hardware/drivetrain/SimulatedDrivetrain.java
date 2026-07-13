@@ -1,9 +1,10 @@
-package org.codeblooded.simhardware.drivetrain;
+package org.codeblooded.ftcodesim.hardware.drivetrain;
 
+import org.codeblooded.ftcodesim.physics.MotionVector;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
-import org.codeblooded.simhardware.devices.SimMotor;
-import org.codeblooded.simhardware.devices.SimVoltageSensor;
-import org.codeblooded.simhardware.devices.SimMotorConfig;
+import org.codeblooded.ftcodesim.hardware.devices.SimMotor;
+import org.codeblooded.ftcodesim.hardware.devices.SimVoltageSensor;
+import org.codeblooded.ftcodesim.hardware.devices.SimMotorConfig;
 import org.codeblooded.fit.MotorModel;
 import org.psilynx.psikit.core.Logger;
 

@@ -1,4 +1,4 @@
-package org.codeblooded.input;
+package org.codeblooded.ftcodesim.input;
 
 import com.qualcomm.robotcore.hardware.Gamepad;
 

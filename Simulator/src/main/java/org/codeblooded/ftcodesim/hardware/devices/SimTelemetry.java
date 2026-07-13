@@ -1,8 +1,8 @@
-package org.codeblooded.simhardware.devices;
+package org.codeblooded.ftcodesim.hardware.devices;
 
 import org.firstinspires.ftc.robotcore.external.Func;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.codeblooded.simulator.FTCodeSim;
+import org.codeblooded.ftcodesim.simulator.FTCodeSim;
 
 public class SimTelemetry implements Telemetry {
     private final FTCodeSim driverStation;

@@ -1,5 +1,7 @@
-package org.codeblooded.simhardware.drivetrain;
+package org.codeblooded.ftcodesim.hardware.drivetrain;
 
+
+import org.codeblooded.ftcodesim.physics.MotionVector;
 
 public class SimulatedMecanum extends SimulatedDrivetrain {
     private static final int FL = 0;

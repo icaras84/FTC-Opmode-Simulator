@@ -1,6 +1,4 @@
-package org.codeblooded.simulator;
-
-import org.codeblooded.simhardware.drivetrain.MotionVector;
+package org.codeblooded.ftcodesim.physics;
 
 public class RobotGeometry {
     double width = 18;

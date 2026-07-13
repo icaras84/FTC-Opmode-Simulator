@@ -1,17 +1,18 @@
-import org.codeblooded.simhardware.SimHardwareMap;
-import org.codeblooded.simhardware.drivetrain.SimulatedTank;
-import org.codeblooded.simhardware.drivetrain.SimTankConfig;
-import org.codeblooded.simulator.RobotGeometry;
-import org.codeblooded.simulator.SimConfig;
-import org.codeblooded.input.DefaultKeybinds;
-import org.codeblooded.simulator.FTCodeSim;
+import org.codeblooded.ftcodesim.hardware.SimHardwareMap;
+import org.codeblooded.ftcodesim.hardware.drivetrain.SimulatedTank;
+import org.codeblooded.ftcodesim.hardware.drivetrain.SimTankConfig;
+import org.codeblooded.ftcodesim.physics.RobotGeometry;
+import org.codeblooded.ftcodesim.simulator.SimConfig;
+import org.codeblooded.ftcodesim.input.DefaultKeybinds;
+import org.codeblooded.ftcodesim.simulator.FTCodeSim;
 import org.junit.Test;
 import java.io.IOException;
 
 public class SimulateTank {
     @Test
     public void test() throws IOException, InterruptedException {
-        SimHardwareMap simHardwareMap = new SimHardwareMap();
+        RobotGeometry robotGeometry = new RobotGeometry(18, 18, 0, 0);
+        SimHardwareMap simHardwareMap = new SimHardwareMap(robotGeometry);
 
         SimTankConfig config = new SimTankConfig();
         config.frontLeftMotorName = "frontLeft";
@@ -35,7 +36,6 @@ public class SimulateTank {
         simConfig.gamepad2Keybinds = new DefaultKeybinds();
         simConfig.simHardwareMap = simHardwareMap;
         simConfig.loopTimeMs = 20;
-        simConfig.robotGeometry = new RobotGeometry(18, 18, 0, 0);
 
         FTCodeSim sim = new FTCodeSim(simConfig);
         sim.run();

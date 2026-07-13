@@ -1,4 +1,4 @@
-package org.codeblooded.simhardware.devices;
+package org.codeblooded.ftcodesim.hardware.devices;
 
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 

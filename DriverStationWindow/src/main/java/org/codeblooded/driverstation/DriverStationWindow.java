@@ -339,7 +339,7 @@ public class DriverStationWindow extends JFrame {
         state = next;
         if (opModeCombo != null && opModeCombo.getItemCount() > 0) {
             OpModePacket sel = (OpModePacket) opModeCombo.getSelectedItem();
-            if (sel != null) {
+            if (sel != null && next == OpModeState.INITIALIZING) {
                 System.out.println("Running OpMode " + sel.name);
                 connection.send(sel);
             }
@@ -490,6 +490,11 @@ public class DriverStationWindow extends JFrame {
                         gamepad1Label.setVisible(gamepad1Connected);
                         gamepad2Label.setVisible(gamepad2Connected);
                     });
+                    try {
+                        Thread.sleep(25);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
                 System.out.println("Gamepad thread exiting");
                 gPadManager.quitSDLGamepad();
