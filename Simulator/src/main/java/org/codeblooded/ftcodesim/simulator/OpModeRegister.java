@@ -4,7 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import org.codeblooded.driverstation.packets.OpModePacket;
+import org.codeblooded.driverstation.packets.InitOpModePacket;
 import org.codeblooded.driverstation.packets.OpModesPacket;
 
 import java.io.DataOutputStream;
@@ -22,20 +22,20 @@ public class OpModeRegister {
         findAnnotatedOpModes();
     }
 
-    public OpModePacket toPacket(OpMode opMode) {
+    public InitOpModePacket toPacket(OpMode opMode) {
         if (opMode.getClass().isAnnotationPresent(TeleOp.class)) {
             TeleOp annotation = opMode.getClass().getAnnotation(TeleOp.class);
             assert annotation != null;
             String name = annotation.name();
             if (name.isEmpty()) name = opMode.getClass().getSimpleName();
-            return new OpModePacket(OpModePacket.Type.TELEOP, name, annotation.group());
+            return new InitOpModePacket(InitOpModePacket.Type.TELEOP, name, annotation.group());
         }
         if (opMode.getClass().isAnnotationPresent(Autonomous.class)) {
             Autonomous annotation = opMode.getClass().getAnnotation(Autonomous.class);
             assert annotation != null;
             String name = annotation.name();
             if (name.isEmpty()) name = opMode.getClass().getSimpleName();
-            return new OpModePacket(OpModePacket.Type.AUTO, name, annotation.group());
+            return new InitOpModePacket(InitOpModePacket.Type.AUTO, name, annotation.group());
         }
         throw new RuntimeException("opmode is not Teleop or Autonomous annotated");
     }
@@ -44,7 +44,7 @@ public class OpModeRegister {
         return opmodes;
     }
 
-    public OpMode getOpMode(OpModePacket packet) {
+    public OpMode getOpMode(InitOpModePacket packet) {
         for (OpMode opMode : getOpModes()) {
             if (toPacket(opMode).equals(packet)) {
                 return opMode;
@@ -54,7 +54,7 @@ public class OpModeRegister {
     }
 
     public void writeOpmodes(DataOutputStream output) throws IOException {
-        List<OpModePacket> opModes = new ArrayList<>();
+        List<InitOpModePacket> opModes = new ArrayList<>();
 
         for (OpMode opMode : getOpModes()) {
             opModes.add(toPacket(opMode));

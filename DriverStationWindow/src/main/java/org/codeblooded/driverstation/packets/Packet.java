@@ -10,6 +10,7 @@ public interface Packet {
     byte TELEMETRY = 1;
     byte KEY = 2;
     byte STATE = 3;
-    byte OPMODE = 4;
+    byte INIT_OPMODE = 4;
     byte CONTROLLER = 5;
+    byte OPMODE_COMMAND = 6;
 }

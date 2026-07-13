@@ -14,12 +14,9 @@ import org.firstinspires.ftc.teamcode.utils.DataSaver;
 import org.firstinspires.ftc.teamcode.utils.Menu;
 import org.firstinspires.ftc.teamcode.utils.OpModeTimer;
 import org.psilynx.psikit.core.Logger;
-import org.psilynx.psikit.ftc.FtcLoggingSession;
-import org.psilynx.psikit.ftc.autolog.PsiKitAutoLog;
 
 import java.util.List;
 
-@PsiKitAutoLog
 public abstract class RobotOpMode extends OpMode {
     private Menu initMenu;
 

@@ -3,11 +3,7 @@ package org.codeblooded.driverstation;
 import com.studiohartman.jamepad.ControllerManager;
 import com.studiohartman.jamepad.ControllerState;
 
-import org.codeblooded.driverstation.packets.ControllerPacket;
-import org.codeblooded.driverstation.packets.KeyPacket;
-import org.codeblooded.driverstation.packets.OpModePacket;
-import org.codeblooded.driverstation.packets.OpModeState;
-import org.codeblooded.driverstation.packets.OpModesPacket;
+import org.codeblooded.driverstation.packets.*;
 
 import javax.swing.*;
 import javax.swing.border.*;
@@ -39,7 +35,7 @@ public class DriverStationWindow extends JFrame {
     private JLabel connectionLabel;
     private JButton mainButton;
     private JButton stopButton;
-    private JComboBox<OpModePacket> opModeCombo;
+    private JComboBox<InitOpModePacket> opModeCombo;
     private JPanel bottomBar;
 
     private Timer swingTimer;
@@ -72,8 +68,8 @@ public class DriverStationWindow extends JFrame {
     private void opModeSelection(OpModesPacket opmodeList) {
         if (opmodeList == null) return;
         SwingUtilities.invokeLater(() -> {
-            DefaultComboBoxModel<OpModePacket> model = new DefaultComboBoxModel<>();
-            for (OpModePacket info : opmodeList.opmodes) {
+            DefaultComboBoxModel<InitOpModePacket> model = new DefaultComboBoxModel<>();
+            for (InitOpModePacket info : opmodeList.opmodes) {
                 model.addElement(info);
             }
             if (opModeCombo == null) {
@@ -82,7 +78,7 @@ public class DriverStationWindow extends JFrame {
                 opModeCombo.setBackground(BG_PANEL);
                 opModeCombo.setForeground(TEXT_PRIMARY);
                 opModeCombo.addActionListener(e -> {
-                    OpModePacket sel = (OpModePacket) opModeCombo.getSelectedItem();
+                    InitOpModePacket sel = (InitOpModePacket) opModeCombo.getSelectedItem();
                     if (sel != null) opModeLabel.setText(sel.toString());
                 });
                 if (bottomBar != null) {
@@ -338,13 +334,18 @@ public class DriverStationWindow extends JFrame {
     private void transitionTo(OpModeState next) {
         state = next;
         if (opModeCombo != null && opModeCombo.getItemCount() > 0) {
-            OpModePacket sel = (OpModePacket) opModeCombo.getSelectedItem();
+            InitOpModePacket sel = (InitOpModePacket) opModeCombo.getSelectedItem();
             if (sel != null && next == OpModeState.INITIALIZING) {
                 System.out.println("Running OpMode " + sel.name);
                 connection.send(sel);
             }
         }
-        connection.send(next);
+        if (next == OpModeState.WAIT_FOR_INIT) {
+            connection.send(OpModeCommandPacket.STOP);
+        }
+        if (next == OpModeState.RUNNING) {
+            connection.send(OpModeCommandPacket.START);
+        }
         System.out.println("Transitioning to " + next);
         SwingUtilities.invokeLater(() -> {
             switch (next) {
@@ -355,7 +356,7 @@ public class DriverStationWindow extends JFrame {
                     stopButton.setEnabled(true);
                     // if an opmode was selected, display and send it to the server
                     if (opModeCombo != null && opModeCombo.getItemCount() > 0) {
-                        OpModePacket sel = (OpModePacket) opModeCombo.getSelectedItem();
+                        InitOpModePacket sel = (InitOpModePacket) opModeCombo.getSelectedItem();
                         if (sel != null) {
                             opModeLabel.setText(sel.toString());
                             //connection.send(sel);

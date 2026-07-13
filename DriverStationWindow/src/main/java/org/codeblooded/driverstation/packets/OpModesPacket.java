@@ -7,15 +7,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class OpModesPacket implements Packet {
-    public List<OpModePacket> opmodes;
+    public List<InitOpModePacket> opmodes;
 
-    public OpModesPacket(List<OpModePacket> opmodes) {
+    public OpModesPacket(List<InitOpModePacket> opmodes) {
         this.opmodes = opmodes;
     }
 
     @Override
     public byte getPacketType() {
-        return Packet.OPMODE;
+        return Packet.INIT_OPMODE;
     }
 
     @Override
@@ -26,13 +26,13 @@ public class OpModesPacket implements Packet {
             throw new RuntimeException(e);
         }
 
-        for (OpModePacket opmode : opmodes) {
+        for (InitOpModePacket opmode : opmodes) {
             opmode.write(output);
         }
     }
 
     public static OpModesPacket read(DataInputStream input) {
-        List<OpModePacket> opmodes = new ArrayList<>();
+        List<InitOpModePacket> opmodes = new ArrayList<>();
 
         int autoCount;
         try {
@@ -41,7 +41,7 @@ public class OpModesPacket implements Packet {
             throw new RuntimeException(e);
         }
         for (int i = 0; i < autoCount; i++) {
-            opmodes.add(OpModePacket.read(input));
+            opmodes.add(InitOpModePacket.read(input));
         }
 
         return new OpModesPacket(opmodes);

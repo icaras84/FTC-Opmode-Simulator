@@ -62,10 +62,10 @@ public class DriverStationConnection {
                         TelemetryPacket packet = TelemetryPacket.read(input);
                         SwingUtilities.invokeLater(() -> telemetryConsumer.accept(packet));
                         break;
-                    case Packet.OPMODE:
+                    case Packet.INIT_OPMODE:
                         OpModesPacket opmodes = OpModesPacket.read(input);
                         System.out.print("RECEIVED OPMODES: ");
-                        for (OpModePacket info : opmodes.opmodes) {
+                        for (InitOpModePacket info : opmodes.opmodes) {
                             System.out.print(", " + info.name);
                         }
                         System.out.println();

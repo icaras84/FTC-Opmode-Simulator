@@ -2,12 +2,12 @@ package org.codeblooded.driverstation.packets;
 
 import java.io.*;
 
-public class OpModePacket implements Packet {
+public class InitOpModePacket implements Packet {
     public Type type;
     public String group;
     public String name;
 
-    public OpModePacket(Type type, String name, String group) {
+    public InitOpModePacket(Type type, String name, String group) {
         this.type = type;
         this.group = group;
         this.name = name;
@@ -20,7 +20,7 @@ public class OpModePacket implements Packet {
 
     @Override
     public byte getPacketType() {
-        return Packet.OPMODE;
+        return Packet.INIT_OPMODE;
     }
 
     public enum Type {
@@ -34,9 +34,9 @@ public class OpModePacket implements Packet {
         output.writeUTF(group);
     }
 
-    public static OpModePacket read(DataInput input) {
+    public static InitOpModePacket read(DataInput input) {
         try {
-            return new OpModePacket(
+            return new InitOpModePacket(
                     Type.values()[input.readByte()],
                     input.readUTF(),
                     input.readUTF()
@@ -48,8 +48,8 @@ public class OpModePacket implements Packet {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof OpModePacket) {
-            OpModePacket other = (OpModePacket) obj;
+        if (obj instanceof InitOpModePacket) {
+            InitOpModePacket other = (InitOpModePacket) obj;
             return other.type.equals(type) && other.name.equals(name) && other.group.equals(group);
         }
         return false;
