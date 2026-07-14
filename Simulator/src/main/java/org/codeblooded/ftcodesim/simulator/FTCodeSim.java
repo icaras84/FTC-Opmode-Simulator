@@ -5,13 +5,20 @@ import androidx.annotation.RequiresApi;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import org.codeblooded.driverstation.OpModeState;
 import org.codeblooded.driverstation.packets.*;
+import org.codeblooded.ftcodesim.ascope.AscopeViewEditor;
+import org.codeblooded.ftcodesim.ascope.SourceType;
 import org.codeblooded.ftcodesim.hardware.SimHardwareMap;
 import org.codeblooded.ftcodesim.hardware.devices.SimTelemetry;
 import org.codeblooded.ftcodesim.input.Keybinds;
+import org.codeblooded.ftcodesim.physics.SeasonField;
 
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -63,6 +70,12 @@ public class FTCodeSim {
                 }
             }
         }, "DS INPUT").start();
+
+
+       AscopeViewEditor editor = new AscopeViewEditor(SeasonField.DECODE);
+       editor.addSource("RealOutputs/Artifacts/green0 ftc coords (m)", SourceType.GREEN_ARTIFACT);
+
+        editor.save();
     }
 
     public void run() throws InterruptedException {
@@ -208,21 +221,70 @@ public class FTCodeSim {
 
         log("Driver Station shutdown.");
     }
+//
+//    private static Process startDriverStationProcess() throws IOException {
+//        File projectRoot = findProjectRoot();
+//        File driverStationJar = new File(projectRoot,
+//                "DriverStationWindow/build/libs/DriverStationWindow.jar");
+//
+//        if (!driverStationJar.exists()) {
+//            buildDriverStationJar(projectRoot);
+//        }
+//
+//        String javaExe = findJavaExecutable();
+//        Process process = new ProcessBuilder(
+//                javaExe,
+//                "-jar",
+//                driverStationJar.getAbsolutePath()
+//        )
+//                .directory(projectRoot)
+//                .redirectErrorStream(true)
+//                .start();
+//
+//        new Thread(() -> {
+//            try (BufferedReader reader = new BufferedReader(
+//                    new InputStreamReader(process.getInputStream()))) {
+//
+//                String line;
+//                while ((line = reader.readLine()) != null) {
+//                    System.out.println("[DriverStation CLI] " + line);
+//                }
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//        }).start();
+//        return process;
+//    }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     private static Process startDriverStationProcess() throws IOException {
         File projectRoot = findProjectRoot();
-        File driverStationJar = new File(projectRoot,
-                "DriverStationWindow/build/libs/DriverStationWindow.jar");
 
-        if (!driverStationJar.exists()) {
-            buildDriverStationJar(projectRoot);
+        URL resource = Objects.requireNonNull(
+                FTCodeSim.class.getClassLoader()
+                        .getResource("assets/DriverStationWindow.jar"),
+                "Could not find DriverStationWindow.jar in resources"
+        );
+
+        Path tempJar = Files.createTempFile(
+                "DriverStationWindow",
+                ".jar"
+        );
+
+        try (InputStream input = resource.openStream()) {
+            Files.copy(
+                    input,
+                    tempJar,
+                    StandardCopyOption.REPLACE_EXISTING
+            );
         }
 
         String javaExe = findJavaExecutable();
+
         Process process = new ProcessBuilder(
                 javaExe,
                 "-jar",
-                driverStationJar.getAbsolutePath()
+                tempJar.toAbsolutePath().toString()
         )
                 .directory(projectRoot)
                 .redirectErrorStream(true)
@@ -240,6 +302,7 @@ public class FTCodeSim {
                 e.printStackTrace();
             }
         }).start();
+
         return process;
     }
 

@@ -20,10 +20,10 @@ The simulator sends live robot data to [AdvantageScope](https://docs.advantagesc
 
 <img width="400" height=auto alt="image" src="https://github.com/user-attachments/assets/fe478143-4ad4-4e2c-a66f-187386090772" />
 
-3. In the top right corner click the `+` icon and select if you want a line graph, 2d field, or 3d field.
+3. In the top right corner click the `+` icon and select if you want a line graph, 2d seasonField, or 3d seasonField.
 <img width="380" height="531" alt="image" src="https://github.com/user-attachments/assets/1af1272b-9c27-46ae-a98e-af6cb262e044" />
 
-Make sure you set it to the right field selected.
+Make sure you set it to the right seasonField selected.
 
 <img width="516" height="677" alt="image" src="https://github.com/user-attachments/assets/66377cb6-4f30-4afe-8a9c-8be97795b654" />
 

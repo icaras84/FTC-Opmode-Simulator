@@ -36,6 +36,8 @@ dependencies {
     api("org.codeblooded:DriverStationWindow:${dairyPublishing.version}")
     api("org.codeblooded:MotorModeling:${dairyPublishing.version}")
 
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.17.2")
+
     testImplementation("junit:junit:4.13.2")
 }
 

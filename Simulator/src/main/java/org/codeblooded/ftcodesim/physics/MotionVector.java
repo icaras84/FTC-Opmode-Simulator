@@ -6,6 +6,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.psilynx.psikit.core.Logger;
 import org.psilynx.psikit.core.wpi.math.Pose2d;
 import org.psilynx.psikit.core.wpi.math.Rotation2d;
+import org.psilynx.psikit.core.wpi.math.Translation3d;
 
 public class MotionVector {
     public final double x;
@@ -87,6 +88,11 @@ public class MotionVector {
         Logger.recordOutput(key + " ftc coords (m)", toFtcCoords().toWPIPose());
     }
 
+    public void log3d(String key, double z) {
+        Logger.recordOutput(key + " Pedro coords (inches)", toWPITranslation(z));
+        Logger.recordOutput(key + " ftc coords (m)", toFtcCoords().toWPITranslation(z / 39.37));
+    }
+
     public MotionVector toFtcCoords() {
         double inchesPerMeter = 39.37;
         double halfField = 141.5/2;
@@ -95,6 +101,10 @@ public class MotionVector {
 
     public Pose2d toWPIPose() {
         return new Pose2d(x, y, new Rotation2d(theta));
+    }
+
+    public Translation3d toWPITranslation(double z) {
+        return new Translation3d(x, y, z);
     }
 
     public Pose2D toPose2D() {
@@ -115,5 +125,9 @@ public class MotionVector {
 
     public MotionVector zeroHeading() {
         return new MotionVector(this.x, this.y, 0);
+    }
+
+    public MotionVector withHeading(double heading) {
+        return new MotionVector(this.x, this.y, heading);
     }
 }

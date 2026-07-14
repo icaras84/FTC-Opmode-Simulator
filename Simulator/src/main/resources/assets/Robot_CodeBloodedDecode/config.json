@@ -1,0 +1,12 @@
+{
+  "name": "CodeBloodedDecode",
+  "isFTC": true, 
+  "disableSimplification": true,
+  "rotations": [
+    {"axis": "x", "degrees": 90},
+    {"axis": "z", "degrees": 90}
+  ],
+  "position": [0.105, 0, 0.0065], 
+  "cameras": [],
+  "components": []
+}

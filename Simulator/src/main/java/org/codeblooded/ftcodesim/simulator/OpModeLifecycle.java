@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import org.codeblooded.ftcodesim.hardware.SimHardwareMap;
 import org.codeblooded.ftcodesim.hardware.devices.SimTelemetry;
+import org.codeblooded.ftcodesim.physics.ArtifactSpawner;
 import org.psilynx.psikit.core.Logger;
 
 
@@ -94,5 +95,6 @@ public class OpModeLifecycle {
         Logger.recordOutput("OpMode/userCodeMs", userCodeTime * 1e-6);
         Logger.recordOutput("OpMode/simHardwareMs", (logStart - loopStart) * 1e-6);
         Logger.recordOutput("OpMode/logMs", (logEnd - logStart - userCodeTime) * 1e-6);
+        new ArtifactSpawner().spawn();
     }
 }
