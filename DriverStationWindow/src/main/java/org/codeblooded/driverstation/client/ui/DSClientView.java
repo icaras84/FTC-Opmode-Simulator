@@ -8,10 +8,6 @@ import java.util.function.Consumer;
 
 public class DSClientView extends JPanel {
 
-    public static final Color MAIN_BG = new Color(0x1A, 0x1A, 0x1A);
-    public static final Color PANEL_BG = new Color(0x2A, 0x2A, 0x2A);
-    public static final Color BORDER_BG = new Color(0x3A, 0x3A, 0x3A);
-
     private final DSClientModel clientModel;
 
     private DSComponentStyle componentStyle;
