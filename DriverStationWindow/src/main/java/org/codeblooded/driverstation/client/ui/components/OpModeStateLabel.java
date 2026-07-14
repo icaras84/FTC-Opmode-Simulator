@@ -1,6 +1,6 @@
-package org.jjophoven.driverstation.ui.components;
+package org.codeblooded.driverstation.client.ui.components;
 
-import org.jjophoven.driverstation.packets.OpModeState;
+import org.codeblooded.driverstation.OpModeState;
 
 import javax.swing.*;
 import java.awt.*;

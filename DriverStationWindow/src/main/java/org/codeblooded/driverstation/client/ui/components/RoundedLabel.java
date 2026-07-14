@@ -1,4 +1,4 @@
-package org.jjophoven.driverstation.ui.components;
+package org.codeblooded.driverstation.client.ui.components;
 
 import javax.swing.*;
 import java.awt.*;

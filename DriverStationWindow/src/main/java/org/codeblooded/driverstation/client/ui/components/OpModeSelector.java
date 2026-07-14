@@ -1,18 +1,16 @@
-package org.jjophoven.driverstation.ui.components;
+package org.codeblooded.driverstation.client.ui.components;
 
-import org.jjophoven.driverstation.packets.OpModePacket;
-import org.jjophoven.driverstation.ui.DSClientModel;
-import org.jjophoven.driverstation.ui.DSClientView;
+import org.codeblooded.driverstation.client.ui.DSClientModel;
+import org.codeblooded.driverstation.packets.InitOpModePacket;
 
 import javax.swing.*;
-import javax.swing.plaf.basic.BasicComboBoxUI;
 import java.awt.*;
 import java.util.Vector;
 
 public class OpModeSelector extends JPanel {
 
-    private final DefaultComboBoxModel<OpModePacket> comboBoxModel;
-    private final JComboBox<OpModePacket> opModeComboBox;
+    private final DefaultComboBoxModel<InitOpModePacket> comboBoxModel;
+    private final JComboBox<InitOpModePacket> opModeComboBox;
 
     public OpModeSelector() {
         super(new BorderLayout());
@@ -29,13 +27,13 @@ public class OpModeSelector extends JPanel {
         this.opModeComboBox.addActionListener(evt -> client.setSelectedOpMode(OpModeSelector.this.opModeComboBox.getSelectedIndex()));
     }
 
-    public void updateAvailableOpModes(Vector<OpModePacket> availableOpModes){
+    public void updateAvailableOpModes(Vector<InitOpModePacket> availableOpModes){
         this.comboBoxModel.removeAllElements();
         availableOpModes.forEach(this.comboBoxModel::addElement);
         this.comboBoxModel.setSelectedItem(this.comboBoxModel.getElementAt(0));
     }
 
-    public JComboBox<OpModePacket> getOpModeComboBox() {
+    public JComboBox<InitOpModePacket> getOpModeComboBox() {
         return opModeComboBox;
     }
 }

@@ -1,7 +1,8 @@
-package org.jjophoven.driverstation.ui;
+package org.codeblooded.driverstation.client.ui;
 
-import org.jjophoven.driverstation.DriverStationConnection;
-import org.jjophoven.driverstation.packets.*;
+import org.codeblooded.driverstation.DriverStationConnection;
+import org.codeblooded.driverstation.OpModeState;
+import org.codeblooded.driverstation.packets.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -16,7 +17,7 @@ public class DSClientModel implements KeyEventDispatcher{
 
     private final DriverStationConnection dsConnection;
     private boolean connected;
-    private final Vector<OpModePacket> availableOpModes;
+    private final Vector<InitOpModePacket> availableOpModes;
     private int selectedOpMode;
     private volatile OpModeState opModeState;
     private String telemetry;
@@ -24,14 +25,14 @@ public class DSClientModel implements KeyEventDispatcher{
 
     // external listeners
     private final Consumer<Boolean> connectionListener;
-    private final Consumer<Vector<OpModePacket>> opModeListListener;
+    private final Consumer<Vector<InitOpModePacket>> opModeListListener;
     private final Consumer<OpModeState> opModeStateListener;
     private final Consumer<String> telemetryListener;
     private final BiConsumer<Long, Long> timerListener;
     private final Consumer<Integer> keyPressedListener;
     private final Consumer<Integer> keyReleasedListener;
 
-    public DSClientModel(int port, Consumer<Boolean> connectionListener, Consumer<Vector<OpModePacket>> opModeListListener, Consumer<OpModeState> opModeStateListener, Consumer<String> telemetryListener, BiConsumer<Long, Long> timerListener, Consumer<Integer> keyPressedListener, Consumer<Integer> keyReleasedListener) {
+    public DSClientModel(int port, Consumer<Boolean> connectionListener, Consumer<Vector<InitOpModePacket>> opModeListListener, Consumer<OpModeState> opModeStateListener, Consumer<String> telemetryListener, BiConsumer<Long, Long> timerListener, Consumer<Integer> keyPressedListener, Consumer<Integer> keyReleasedListener) {
         this.connectionListener = connectionListener;
         this.opModeListListener = opModeListListener;
         this.opModeStateListener = opModeStateListener;
@@ -126,13 +127,15 @@ public class DSClientModel implements KeyEventDispatcher{
                 break;
             case WAIT_FOR_INIT:
                 this.stopTimer();
+                this.dsConnection.send(OpModeCommandPacket.STOP);
                 break;
             case RUNNING:
                 this.startTimer();
+                this.dsConnection.send(OpModeCommandPacket.START);
                 break;
         }
 
-        this.dsConnection.send(this.opModeState);
+
         this.opModeStateListener.accept(this.opModeState);
     }
 
@@ -148,7 +151,7 @@ public class DSClientModel implements KeyEventDispatcher{
         return connected;
     }
 
-    public Vector<OpModePacket> getAvailableOpModes() {
+    public Vector<InitOpModePacket> getAvailableOpModes() {
         return availableOpModes;
     }
 
@@ -176,7 +179,7 @@ public class DSClientModel implements KeyEventDispatcher{
         return connectionListener;
     }
 
-    public Consumer<Vector<OpModePacket>> getOpModeListListener() {
+    public Consumer<Vector<InitOpModePacket>> getOpModeListListener() {
         return opModeListListener;
     }
 
