@@ -34,6 +34,10 @@ public class ConnectionLabel extends JPanel {
         }
     }
 
+    public JLabel getLabel() {
+        return label;
+    }
+
     public Color getConnectedColor() {
         return connectedColor;
     }

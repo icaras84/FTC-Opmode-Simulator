@@ -14,6 +14,9 @@ public class DSClientView extends JPanel {
 
     private final DSClientModel clientModel;
 
+    private DSComponentStyle componentStyle;
+    private DSComponentLayout componentLayout;
+
     private ConnectionLabel connectionLabel;
     private OpModeSelector opModeSelector;
     private OpModeStateLabel opModeStateLabel;
@@ -23,9 +26,11 @@ public class DSClientView extends JPanel {
 
     private final Consumer<Boolean> connectionCallback;
 
-    public DSClientView(int port, Consumer<Boolean> connectionCallback) {
+    public DSClientView(int port, Consumer<Boolean> connectionCallback, DSComponentStyle componentStyle, DSComponentLayout componentLayout) {
         super();
         this.connectionCallback = connectionCallback;
+        this.componentStyle = componentStyle;
+        this.componentLayout = componentLayout;
 
         initUIComponents();
 
@@ -56,56 +61,27 @@ public class DSClientView extends JPanel {
         this.telemetryArea = new TelemetryArea();
         this.timerLabel = new TimerLabel();
 
-        super.setBackground(DSClientView.MAIN_BG);
-        super.setLayout(new BorderLayout());
-
         this.connectionLabel.setPreferredSize(new Dimension(100,25));
 
-        toolbarLayout();
+        this.componentStyle.styleConnectionLabel(this.connectionLabel);
+        this.componentStyle.styleOpModeSelector(this.opModeSelector);
+        this.componentStyle.styleOpModeStateLabel(this.opModeStateLabel);
+        this.componentStyle.styleOpModeControlButtons(this.opModeControlButtons);
+        this.componentStyle.styleTelemetryArea(this.telemetryArea);
+        this.componentStyle.styleTimerLabel(this.timerLabel);
+
+        this.componentStyle.styleWindow(this);
+        this.componentLayout.mainLayout(
+                this.componentStyle,
+                this,
+                this.connectionLabel,
+                this.opModeSelector,
+                this.opModeStateLabel,
+                this.opModeControlButtons,
+                this.timerLabel,
+                this.telemetryArea);
     }
 
-    private void toolbarLayout(){
-        JPanel topPanel = new JPanel();
-
-        topPanel.setBackground(DSClientView.PANEL_BG);
-        topPanel.setLayout(new GridBagLayout());
-
-
-        JPanel leftCluster = new JPanel(new BorderLayout(5, 0));
-
-        leftCluster.add(this.connectionLabel, BorderLayout.WEST);
-        leftCluster.add(this.opModeSelector, BorderLayout.CENTER);
-        leftCluster.add(this.opModeStateLabel, BorderLayout.EAST);
-
-        topPanel.add(leftCluster, createGBC(0));
-
-        JPanel spacer = new JPanel();
-        GridBagConstraints spacerConstraint = createGBC(1);
-        spacerConstraint.weightx = 1;
-        topPanel.add(spacer, spacerConstraint);
-
-        topPanel.add(this.opModeControlButtons, createGBC(2));
-
-        for (Component component : topPanel.getComponents()) {
-            component.setBackground(DSClientView.PANEL_BG);
-        }
-
-        this.connectionLabel.setBackground(DSClientView.PANEL_BG);
-        this.opModeSelector.setBackground(DSClientView.PANEL_BG);
-
-        super.add(topPanel, BorderLayout.NORTH);
-        super.add(this.telemetryArea, BorderLayout.CENTER);
-    }
-
-    private GridBagConstraints createGBC(int x){
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.weightx = 0;
-        gbc.weighty = 0;
-        gbc.gridx = x;
-        gbc.gridy = 0;
-        return gbc;
-    }
 
     private void onConnection(boolean isConnected){
         this.connectionLabel.onConnectionStateChange(isConnected);

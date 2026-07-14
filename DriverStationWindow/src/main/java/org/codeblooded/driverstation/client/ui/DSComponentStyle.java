@@ -5,16 +5,41 @@ import org.codeblooded.driverstation.client.ui.components.*;
 import javax.swing.*;
 import java.awt.*;
 
-public interface DSComponentStyle {
-    default void stylePanel(JPanel panel){
+public class DSComponentStyle {
+
+    public void stylePanel(JPanel panel){
         panel.setBackground(new Color(0x2A, 0x2A, 0x2A));
     }
-    default void styleWindow(JPanel windowContentPanel){
+
+    public void styleWindow(JPanel windowContentPanel){
         windowContentPanel.setBackground(new Color(0x1A, 0x1A, 0x1A));
     }
-    void styleConnectionLabel(ConnectionLabel connectionLabel);
-    void styleOpModeSelector(OpModeSelector opModeSelector);
-    void styleOpModeControlButtons(OpModeControlButtons opModeControlButtons);
-    void styleTimerLabel(TimerLabel timerLabel);
-    void styleTelemetryArea(TelemetryArea telemetryArea);
+
+    public void styleConnectionLabel(ConnectionLabel connectionLabel){
+        connectionLabel.getLabel().setFont(new Font("Dialog", Font.BOLD, 12));
+        connectionLabel.getLabel().setOpaque(false);
+    }
+
+    public void styleOpModeSelector(OpModeSelector opModeSelector){
+        this.stylePanel(opModeSelector);
+        opModeSelector.getOpModeComboBox().setFont(new Font("Dialog", Font.BOLD, 18));
+    }
+
+    public void styleOpModeControlButtons(OpModeControlButtons opModeControlButtons){
+        this.stylePanel(opModeControlButtons);
+    }
+
+    public void styleOpModeStateLabel(OpModeStateLabel opModeStateLabel){
+        opModeStateLabel.getLabel().setFont(new Font("Dialog", Font.BOLD, 11));
+    }
+
+    public void styleTimerLabel(TimerLabel timerLabel){
+        timerLabel.getTimeLabel().setFont(new Font("Monospaced", Font.BOLD, 28));
+        timerLabel.getTimeLabel().setHorizontalAlignment(SwingConstants.RIGHT);
+    }
+
+    public void styleTelemetryArea(TelemetryArea telemetryArea){
+        telemetryArea.getTelemetryOutput().setFont(new Font("Monospaced", Font.PLAIN, 12));
+    }
+
 }
