@@ -10,8 +10,8 @@ public class DSClientView extends JPanel {
 
     private final DSClientModel clientModel;
 
-    private DSComponentStyle componentStyle;
-    private DSComponentLayout componentLayout;
+    private final DSComponentStyle componentStyle;
+    private final DSComponentLayout componentLayout;
 
     private ConnectionLabel connectionLabel;
     private OpModeSelector opModeSelector;
@@ -47,6 +47,10 @@ public class DSClientView extends JPanel {
         this.opModeControlButtons.acceptClient(this.clientModel);
 
         KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(this.clientModel);
+    }
+
+    public DSClientView(int port, Consumer<Boolean> connectionCallback) {
+        this(port, connectionCallback, new DSComponentStyle(), new DSComponentLayout());
     }
 
     private void initUIComponents(){
