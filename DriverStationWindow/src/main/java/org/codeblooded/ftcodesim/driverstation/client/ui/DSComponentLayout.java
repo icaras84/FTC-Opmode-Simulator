@@ -1,7 +1,8 @@
-package org.codeblooded.driverstation.client.ui;
+package org.codeblooded.ftcodesim.driverstation.client.ui;
 
 
 import org.codeblooded.driverstation.client.ui.components.*;
+import org.codeblooded.ftcodesim.driverstation.client.ui.components.*;
 
 import javax.swing.*;
 import java.awt.*;
