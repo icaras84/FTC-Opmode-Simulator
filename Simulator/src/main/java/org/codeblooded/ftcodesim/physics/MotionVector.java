@@ -1,5 +1,7 @@
 package org.codeblooded.ftcodesim.physics;
 
+import org.codeblooded.ftcodesim.ascope.AdvantageScopeRunner;
+import org.codeblooded.ftcodesim.ascope.SourceType;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
@@ -27,6 +29,14 @@ public class MotionVector {
 
     public static MotionVector fromPose2D(Pose2D pose) {
         return new MotionVector(pose.getX(DistanceUnit.INCH), pose.getY(DistanceUnit.INCH), pose.getHeading(AngleUnit.RADIANS));
+    }
+
+    public MotionVector subtractX(double x) {
+        return new MotionVector(this.x - x, this.y, this.theta);
+    }
+
+    public MotionVector addY(double y) {
+        return new MotionVector(this.x, this.y + y, this.theta);
     }
 
     public double dot(MotionVector other) {
@@ -91,6 +101,11 @@ public class MotionVector {
     public void log3d(String key, double z) {
         Logger.recordOutput(key + " Pedro coords (inches)", toWPITranslation(z));
         Logger.recordOutput(key + " ftc coords (m)", toFtcCoords().toWPITranslation(z / 39.37));
+    }
+
+    public void log3d(String key, double z, SourceType sourceType) {
+        log3d(key, z);
+        AdvantageScopeRunner.INSTANCE.addSource("RealOutputs/" + key + " ftc coords (m)", sourceType);
     }
 
     public MotionVector toFtcCoords() {

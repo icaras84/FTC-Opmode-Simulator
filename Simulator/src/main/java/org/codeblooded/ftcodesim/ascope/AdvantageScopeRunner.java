@@ -21,9 +21,12 @@ public class AdvantageScopeRunner extends JsonEditor {
     ArrayNode sources;
     Process window;
 
+    public static AdvantageScopeRunner INSTANCE;
+
     @RequiresApi(api = Build.VERSION_CODES.O)
     public AdvantageScopeRunner(SeasonField seasonField) {
         super(getStateFile());
+        INSTANCE = this;
         sources = fieldView3D(seasonField);
 
         URL robotModelsUrl = Objects.requireNonNull(

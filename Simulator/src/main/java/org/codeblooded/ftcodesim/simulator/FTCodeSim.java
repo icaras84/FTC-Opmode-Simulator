@@ -12,6 +12,7 @@ import org.codeblooded.ftcodesim.driverstation.packets.Packet;
 import org.codeblooded.ftcodesim.hardware.SimHardwareMap;
 import org.codeblooded.ftcodesim.hardware.devices.SimTelemetry;
 import org.codeblooded.ftcodesim.input.Keybinds;
+import org.codeblooded.ftcodesim.physics.ArtifactSpawner;
 import org.codeblooded.ftcodesim.physics.SeasonField;
 
 import java.io.*;
@@ -66,7 +67,7 @@ public class FTCodeSim {
         acceptClient();
 
         advantageScope = new AdvantageScopeRunner(SeasonField.DECODE);
-//        advantageScope.addSource("RealOutputs/Artifacts/green0 ftc coords (m)", SourceType.GREEN_ARTIFACT);
+        new ArtifactSpawner().spawn();
 
         advantageScope.saveConfig();
 

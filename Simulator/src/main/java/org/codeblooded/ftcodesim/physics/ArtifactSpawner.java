@@ -1,6 +1,7 @@
 package org.codeblooded.ftcodesim.physics;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.codeblooded.ftcodesim.ascope.SourceType;
 
 import java.util.Map;
 
@@ -46,12 +47,11 @@ public class ArtifactSpawner {
 
     public void spawn() {
         for (int i = 0; i < greenArtifacts.length; i++) {
-            greenArtifacts[i].log3d("Artifacts/green" + i, 4.9/2);
+            greenArtifacts[i].subtractX(2.25).addY(0.25).log3d("Artifacts/green" + i, 4.9/2, SourceType.GREEN_ARTIFACT);
         }
 
         for (int i = 0; i < purpleArtifacts.length; i++) {
-            purpleArtifacts[i].log3d("Artifacts/purple" + i, 4.9/2);
+            purpleArtifacts[i].subtractX(2.25).addY(0.25).log3d("Artifacts/purple" + i, 4.9/2, SourceType.PURPLE_ARTIFACT);
         }
-
     }
 }
