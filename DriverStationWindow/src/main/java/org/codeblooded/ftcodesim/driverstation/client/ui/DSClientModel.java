@@ -1,8 +1,8 @@
 package org.codeblooded.ftcodesim.driverstation.client.ui;
 
-import org.codeblooded.driverstation.DriverStationConnection;
-import org.codeblooded.driverstation.OpModeState;
-import org.codeblooded.driverstation.packets.*;
+import org.codeblooded.ftcodesim.driverstation.DriverStationConnection;
+import org.codeblooded.ftcodesim.driverstation.OpModeState;
+import org.codeblooded.ftcodesim.driverstation.packets.*;
 
 import javax.swing.*;
 import java.awt.*;
