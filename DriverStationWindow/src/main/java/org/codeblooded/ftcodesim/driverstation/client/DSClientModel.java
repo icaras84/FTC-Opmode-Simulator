@@ -1,4 +1,4 @@
-package org.codeblooded.ftcodesim.driverstation.client.ui;
+package org.codeblooded.ftcodesim.driverstation.client;
 
 import org.codeblooded.ftcodesim.driverstation.DriverStationConnection;
 import org.codeblooded.ftcodesim.driverstation.OpModeState;

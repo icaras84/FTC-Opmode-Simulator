@@ -2,7 +2,7 @@ package org.codeblooded.ftcodesim.driverstation.client.ui.components;
 
 
 import org.codeblooded.ftcodesim.driverstation.OpModeState;
-import org.codeblooded.ftcodesim.driverstation.client.ui.DSClientModel;
+import org.codeblooded.ftcodesim.driverstation.client.DSClientModel;
 
 import javax.swing.*;
 import java.awt.*;
