@@ -1,12 +1,12 @@
 https://github.com/user-attachments/assets/8d33261f-094c-4cb3-9bf3-9e1ee5f3c3f3
 
-## This project is a plug-and-play [**FTC OpMode Simulator**](https://github.com/jjophoven/FTC-Code-Simulator) that runs *without* a robot.
+## This project is a plug-and-play [**FTC Code Simulator**](https://github.com/jjophoven/FTC-Code-Simulator) that runs your FTC code *without* a physical robot.
 
 # Features
 - **Line-by-line debugging** with breakpoints
+- **Simulated mecanum drive** using per-wheel motor acceleration models fit from real-world data
 - **Live TeleOp input** from a local keyboard or controller
 - **Emulated Driver Station** with OpMode selection, init, start, stop, and telemetry
-- **Simulated mecanum drive** using per-wheel motor acceleration models fit from real-world data
 - **Fake hardware layer** that runs existing FTC code without modifying your OpModes
 - **Motor modeling and trajectory simulation** for testing motor models, controllers, and robot behavior against real data
 
