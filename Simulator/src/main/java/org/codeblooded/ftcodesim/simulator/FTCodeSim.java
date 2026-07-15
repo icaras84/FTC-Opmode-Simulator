@@ -3,15 +3,25 @@ package org.codeblooded.ftcodesim.simulator;
 import android.os.Build;
 import androidx.annotation.RequiresApi;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import org.codeblooded.driverstation.OpModeState;
-import org.codeblooded.driverstation.packets.*;
+import org.codeblooded.ftcodesim.driverstation.OpModeState;
+import org.codeblooded.ftcodesim.ascope.AdvantageScopeRunner;
+import org.codeblooded.ftcodesim.driverstation.packets.InitOpModePacket;
+import org.codeblooded.ftcodesim.driverstation.packets.KeyPacket;
+import org.codeblooded.ftcodesim.driverstation.packets.OpModeCommandPacket;
+import org.codeblooded.ftcodesim.driverstation.packets.Packet;
 import org.codeblooded.ftcodesim.hardware.SimHardwareMap;
 import org.codeblooded.ftcodesim.hardware.devices.SimTelemetry;
 import org.codeblooded.ftcodesim.input.Keybinds;
+import org.codeblooded.ftcodesim.physics.ArtifactSpawner;
+import org.codeblooded.ftcodesim.physics.SeasonField;
 
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -42,6 +52,8 @@ public class FTCodeSim {
     SimTelemetry telemetry;
     volatile OpModeLifecycle opModeLifecycle;
 
+    AdvantageScopeRunner advantageScope;
+
     // TODO create a way to select from multiple "simulated" robots
     @RequiresApi(api = Build.VERSION_CODES.O)
     public FTCodeSim(SimConfig config) throws IOException {
@@ -53,6 +65,12 @@ public class FTCodeSim {
 
         startServer();
         acceptClient();
+
+        advantageScope = new AdvantageScopeRunner(SeasonField.DECODE);
+        new ArtifactSpawner().spawn();
+
+        advantageScope.saveConfig();
+
         new Thread(() -> {
             while (windowIsRunning()) {
                 readPackets();
@@ -78,7 +96,7 @@ public class FTCodeSim {
     }
 
     public boolean windowIsRunning() {
-        return driverStationWindow.isAlive();
+        return driverStationWindow.isAlive() && advantageScope.isOpen();
     }
 
     public void startServer() throws IOException {
@@ -209,20 +227,69 @@ public class FTCodeSim {
         log("Driver Station shutdown.");
     }
 
+//    private static Process startDriverStationProcess() throws IOException {
+//        File projectRoot = findProjectRoot();
+//        File driverStationJar = new File(projectRoot,
+//                "DriverStationWindow/build/libs/DriverStationWindow.jar");
+//
+//        if (!driverStationJar.exists()) {
+//            buildDriverStationJar(projectRoot);
+//        }
+//
+//        String javaExe = findJavaExecutable();
+//        Process process = new ProcessBuilder(
+//                javaExe,
+//                "-jar",
+//                driverStationJar.getAbsolutePath()
+//        )
+//                .directory(projectRoot)
+//                .redirectErrorStream(true)
+//                .start();
+//
+//        new Thread(() -> {
+//            try (BufferedReader reader = new BufferedReader(
+//                    new InputStreamReader(process.getInputStream()))) {
+//
+//                String line;
+//                while ((line = reader.readLine()) != null) {
+//                    System.out.println("[DriverStation CLI] " + line);
+//                }
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//        }).start();
+//        return process;
+//    }
+
+    @RequiresApi(api = Build.VERSION_CODES.O)
     private static Process startDriverStationProcess() throws IOException {
         File projectRoot = findProjectRoot();
-        File driverStationJar = new File(projectRoot,
-                "DriverStationWindow/build/libs/DriverStationWindow.jar");
 
-        if (!driverStationJar.exists()) {
-            buildDriverStationJar(projectRoot);
+        URL resource = Objects.requireNonNull(
+                FTCodeSim.class.getClassLoader()
+                        .getResource("assets/DriverStationWindow-all.jar"),
+                "Could not find DriverStationWindow-all.jar in resources"
+        );
+
+        Path tempJar = Files.createTempFile(
+                "DriverStationWindow-all",
+                ".jar"
+        );
+
+        try (InputStream input = resource.openStream()) {
+            Files.copy(
+                    input,
+                    tempJar,
+                    StandardCopyOption.REPLACE_EXISTING
+            );
         }
 
         String javaExe = findJavaExecutable();
+
         Process process = new ProcessBuilder(
                 javaExe,
                 "-jar",
-                driverStationJar.getAbsolutePath()
+                tempJar.toAbsolutePath().toString()
         )
                 .directory(projectRoot)
                 .redirectErrorStream(true)
@@ -240,6 +307,7 @@ public class FTCodeSim {
                 e.printStackTrace();
             }
         }).start();
+
         return process;
     }
 
