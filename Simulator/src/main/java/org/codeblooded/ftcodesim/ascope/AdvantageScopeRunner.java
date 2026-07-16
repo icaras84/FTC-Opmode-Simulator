@@ -164,9 +164,17 @@ public class AdvantageScopeRunner extends JsonEditor {
             SourceType sourceType
     ) {
         for (JsonNode source : sources) {
-            if(isEqualTo(source, "logKey", key)
-                    && isEqualTo(source, "logType", sourceType.logType)
+            String currentModel = sourceType.options.get("model") != null ? sourceType.options.get("model").asText() : "";
+            String currentVariant = sourceType.options.get("variant") != null ? sourceType.options.get("variant").asText() : "";
+
+            boolean isSameRobotModel = (sourceType.options.get("model") != null
+                    && isEqualTo(source, "options/model", currentModel));
+            boolean isSameVariant = (sourceType.options.get("variant") != null
+                    && isEqualTo(source, "options/variant", currentVariant));
+
+            if (isEqualTo(source, "logKey", key) && (isSameRobotModel || isSameVariant)
             ) {
+                //System.out.println("Source already exists: " + key);
                 return;
             }
         }

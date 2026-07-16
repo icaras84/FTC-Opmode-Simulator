@@ -66,10 +66,11 @@ public class FTCodeSim {
         startServer();
         acceptClient();
 
-        advantageScope = new AdvantageScopeRunner(SeasonField.DECODE);
-        new ArtifactSpawner().spawn();
-
-        advantageScope.saveConfig();
+        advantageScope = new AdvantageScopeRunner(config.field);
+        config.simHardwareMap.update();
+        //new ArtifactSpawner().spawn();
+        // hardwareMap.addSources? or
+//        advantageScope.saveConfig();
 
         new Thread(() -> {
             while (windowIsRunning()) {

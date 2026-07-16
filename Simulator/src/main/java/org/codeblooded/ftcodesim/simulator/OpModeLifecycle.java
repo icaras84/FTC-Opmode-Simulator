@@ -95,6 +95,6 @@ public class OpModeLifecycle {
         Logger.recordOutput("OpMode/userCodeMs", userCodeTime * 1e-6);
         Logger.recordOutput("OpMode/simHardwareMs", (logStart - loopStart) * 1e-6);
         Logger.recordOutput("OpMode/logMs", (logEnd - logStart - userCodeTime) * 1e-6);
-        new ArtifactSpawner().spawn();
+        //new ArtifactSpawner().spawn();
     }
 }

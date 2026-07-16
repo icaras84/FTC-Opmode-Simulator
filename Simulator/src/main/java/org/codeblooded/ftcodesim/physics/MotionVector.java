@@ -98,6 +98,12 @@ public class MotionVector {
         Logger.recordOutput(key + " ftc coords (m)", toFtcCoords().toWPIPose());
     }
 
+    public void log(String key, SourceType sourceType) {
+        log(key);
+        AdvantageScopeRunner.INSTANCE.addSource("RealOutputs/" + key + " ftc coords (m)", sourceType);
+    }
+
+
     public void log3d(String key, double z) {
         Logger.recordOutput(key + " Pedro coords (inches)", toWPITranslation(z));
         Logger.recordOutput(key + " ftc coords (m)", toFtcCoords().toWPITranslation(z / 39.37));

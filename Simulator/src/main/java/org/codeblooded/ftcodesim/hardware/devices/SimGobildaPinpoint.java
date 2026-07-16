@@ -11,6 +11,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.codeblooded.ftcodesim.physics.MotionVector;
 import org.codeblooded.ftcodesim.hardware.drivetrain.SimulatedDrivetrain;
+import org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit;
 
 public class SimGobildaPinpoint extends GoBildaPinpointDriver implements SimHardwareDevice {
     private final SimulatedDrivetrain drivetrain;
@@ -23,6 +24,7 @@ public class SimGobildaPinpoint extends GoBildaPinpointDriver implements SimHard
     @Override
     public void update(double deltaTime) {
         pose2D = drivetrain.getActualPose(); // TODO add optional noise
+        headingVel = drivetrain.getVelocityPose().getHeading(AngleUnit.RADIANS); // TODO add optional noise
     }
 
     @Override
@@ -37,9 +39,15 @@ public class SimGobildaPinpoint extends GoBildaPinpointDriver implements SimHard
     }
 
     public Pose2D pose2D;
+    public double headingVel;
 
     public Pose2D getPosition() {
         return pose2D;
+    }
+
+    @Override
+    public double getHeadingVelocity(UnnormalizedAngleUnit unnormalizedAngleUnit) {
+        return headingVel;
     }
 }
 
