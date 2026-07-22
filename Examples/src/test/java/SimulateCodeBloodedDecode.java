@@ -1,9 +1,11 @@
+import org.codeblooded.ftcodesim.ascope.SourceType;
 import org.codeblooded.ftcodesim.hardware.devices.SimGobildaPinpoint;
 import org.codeblooded.ftcodesim.hardware.drivetrain.SimulatedDrivetrain;
 import org.codeblooded.ftcodesim.input.DefaultKeybinds;
 import org.codeblooded.ftcodesim.hardware.SimHardwareMap;
 import org.codeblooded.ftcodesim.hardware.drivetrain.SimMecanumConfig;
 import org.codeblooded.ftcodesim.hardware.drivetrain.SimulatedMecanum;
+import org.codeblooded.ftcodesim.physics.SeasonField;
 import org.codeblooded.ftcodesim.simulator.FTCodeSim;
 import org.codeblooded.ftcodesim.physics.RobotGeometry;
 import org.codeblooded.ftcodesim.simulator.SimConfig;
@@ -31,6 +33,7 @@ public class SimulateCodeBloodedDecode {
         mecanumConfig.naturalDeceleration = 40;
         mecanumConfig.strafeEfficiency = 0.80;
         mecanumConfig.robotGeometry = new RobotGeometry(12, 18, 2, 0);
+        mecanumConfig.robotModel = SourceType.ROBOT_CODE_BLOODED_DECODE;
 
         SimulatedDrivetrain drivetrain = new SimulatedMecanum(mecanumConfig);
 
@@ -42,6 +45,7 @@ public class SimulateCodeBloodedDecode {
         simConfig.gamepad2Keybinds = new DefaultKeybinds();
         simConfig.simHardwareMap = simHardwareMap;
         simConfig.loopTimeMs = 20;
+        simConfig.field = SeasonField.DECODE;
 
         FTCodeSim sim = new FTCodeSim(simConfig);
         sim.run();

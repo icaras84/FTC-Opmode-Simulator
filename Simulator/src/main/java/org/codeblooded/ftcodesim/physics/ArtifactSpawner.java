@@ -44,7 +44,6 @@ public class ArtifactSpawner {
             new MotionVector(122.5, 35.5),
     };
 
-
     public void spawn() {
         for (int i = 0; i < greenArtifacts.length; i++) {
             greenArtifacts[i].subtractX(2.25).addY(0.25).log3d("Artifacts/green" + i, 4.9/2, SourceType.GREEN_ARTIFACT);

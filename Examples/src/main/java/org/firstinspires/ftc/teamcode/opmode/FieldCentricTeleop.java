@@ -7,23 +7,47 @@ import org.psilynx.psikit.core.Logger;
 
 @TeleOp
 public class FieldCentricTeleop extends TeleOpMode {
+    double lockedHeading = 0;
     @Override
     public void loop() {
         super.loop();
 
-        Logger.recordOutput("heading", localizer.getPose().getHeading());
-
         double heading = localizer.getPose().getHeading();
+
+        Logger.recordOutput("heading", heading);
+        Logger.recordOutput("headingVel", localizer.getVelocity().getHeading());
+
+        double relativeHeading = heading;
         if (alliance == Alliance.BLUE) {
-            heading += Math.PI;
+            relativeHeading += Math.PI;
         }
 
+        double turn;
+        if (Math.abs(gamepad1.right_stick_x) > 0.05) {
+            lockedHeading = heading;
+            turn = -gamepad1.right_stick_x;
+        } else if (localizer.getVelocity().getHeading() > 0.1) {
+            lockedHeading = heading;
+            turn = 0;
+        } else {
+            turn = angleWrap(lockedHeading - heading) * 1 - localizer.getVelocity().getHeading() * 0.1;
+        }
+
+        Logger.recordOutput("lockedHeading2", lockedHeading);
+        Logger.recordOutput("turn2", turn);
+
         drivetrain.driveFieldCentric(
-                heading,
+                relativeHeading,
                 -gamepad1.left_stick_y,
                 -gamepad1.left_stick_x,
-                -gamepad1.right_stick_x
+                turn
         );
+    }
+
+    private static double angleWrap(double angle) {
+        while (angle <= -Math.PI) angle += 2 * Math.PI;
+        while (angle > Math.PI) angle -= 2 * Math.PI;
+        return angle;
     }
 
     @Override

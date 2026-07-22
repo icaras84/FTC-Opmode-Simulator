@@ -34,12 +34,17 @@ public abstract class SimulatedDrivetrain implements SimHardwareMechanism {
         return position.toPose2D();
     }
 
+    public Pose2D getVelocityPose() {
+        return velocity.toPose2D();
+    }
+
     public void registerDevices(SimHardwareMap hardwareMap) {
         this.hardwareMap = hardwareMap;
         this.voltageSensor = (SimVoltageSensor) hardwareMap.voltageSensor.iterator().next();
         for (int i = 0; i < motorNames.length; i++) {
             motors[i] = registerMotor(motorNames[i]);
         }
+        //position.log("Mecanum/position", config.robotModel);
     }
 
     public SimMotor registerMotor(String name) {
@@ -90,7 +95,7 @@ public abstract class SimulatedDrivetrain implements SimHardwareMechanism {
 
         // TODO maybe make it more accurate by calculating rolling accel?
 
-        position.log("Mecanum/position");
+        position.log("Mecanum/position", config.robotModel);
 
         collisionCheck();
     }
