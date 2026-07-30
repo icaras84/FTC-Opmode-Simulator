@@ -1,4 +1,4 @@
-package org.codeblooded.ftcodesim.driverstation.packets;
+package org.codeblooded.ftcodesim.driverstation.client.packets;
 
 import java.io.DataInput;
 import java.io.DataOutputStream;

@@ -1,10 +1,9 @@
 package org.codeblooded.ftcodesim.driverstation;
 
-import org.codeblooded.ftcodesim.driverstation.packets.*;
-import org.codeblooded.ftcodesim.driverstation.packets.InitOpModePacket;
-import org.codeblooded.ftcodesim.driverstation.packets.OpModesPacket;
-import org.codeblooded.ftcodesim.driverstation.packets.Packet;
-import org.codeblooded.ftcodesim.driverstation.packets.TelemetryPacket;
+import org.codeblooded.ftcodesim.driverstation.client.packets.InitOpModePacket;
+import org.codeblooded.ftcodesim.driverstation.client.packets.OpModesPacket;
+import org.codeblooded.ftcodesim.driverstation.client.packets.Packet;
+import org.codeblooded.ftcodesim.driverstation.client.packets.TelemetryPacket;
 
 import javax.swing.*;
 import java.io.DataInputStream;
