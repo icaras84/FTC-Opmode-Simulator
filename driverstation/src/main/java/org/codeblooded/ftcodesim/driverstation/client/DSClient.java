@@ -24,6 +24,7 @@ public class DSClient {
     private Socket socket;
     private DataInputStream input;
     private DataOutputStream output;
+    private boolean connected;
 
     // thread management variables
     private Thread clientThread;
@@ -41,6 +42,7 @@ public class DSClient {
         this.socket = new Socket();
         this.input = null;
         this.output = null;
+        this.connected = false;
 
         this.clientThread = new Thread(this::clientLogic);
         this.threadRunning = new AtomicBoolean(false);
@@ -61,6 +63,7 @@ public class DSClient {
 
             this.input = new DataInputStream(this.socket.getInputStream());
             this.output = new DataOutputStream(this.socket.getOutputStream());
+            this.connected = true;
             return true;
         } catch (IOException e) {
             System.err.println("Could not connect to the server");
@@ -138,5 +141,9 @@ public class DSClient {
     }
     public Optional<DataOutputStream> getOutputStream() {
         return Optional.ofNullable(this.output);
+    }
+
+    public boolean isConnected() {
+        return this.connected;
     }
 }
