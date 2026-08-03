@@ -18,7 +18,7 @@ public class DSComponentLayout {
                            TelemetryArea telemetryArea){
 
 
-        JPanel controlPanel = new JPanel(new BorderLayout(5, 5));
+        JPanel controlPanel = new JPanel(new BorderLayout());
 
         JPanel topBar = buildTopBar(componentStyle, connectionLabel);
         JPanel mainPanel = buildOpModePanel(componentStyle, opModeSelector, opModeStateLabel, timerLabel, opModeControlButtons);
@@ -26,11 +26,10 @@ public class DSComponentLayout {
         controlPanel.add(topBar, BorderLayout.NORTH);
         controlPanel.add(mainPanel, BorderLayout.CENTER);
 
-        contentPanel.setLayout(new BoxLayout(controlPanel, BoxLayout.X_AXIS));
+        contentPanel.setLayout(new BorderLayout());
 
-        contentPanel.add(controlPanel);
-        controlPanel.add(Box.createHorizontalStrut(10));
-        controlPanel.add(telemetryArea);
+        contentPanel.add(controlPanel, BorderLayout.NORTH);
+        contentPanel.add(telemetryArea, BorderLayout.CENTER);
     }
 
     private JPanel buildTopBar(DSComponentStyle componentStyle, ConnectionLabel connectionLabel){
