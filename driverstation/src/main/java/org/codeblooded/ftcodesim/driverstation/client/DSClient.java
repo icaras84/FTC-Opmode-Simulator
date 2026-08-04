@@ -5,7 +5,6 @@ import org.codeblooded.ftcodesim.driverstation.client.packets.OpModesPacket;
 import org.codeblooded.ftcodesim.driverstation.client.packets.Packet;
 import org.codeblooded.ftcodesim.driverstation.client.packets.TelemetryPacket;
 
-import javax.swing.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -27,10 +26,13 @@ public class DSClient {
     private boolean connected;
 
     // thread management variables
-    private Thread clientThread;
-    private AtomicBoolean threadRunning;
-    private ConcurrentLinkedDeque<Packet> packets;
-    private Vector<Runnable> tasks;
+    private final Thread clientThread;
+    private final AtomicBoolean threadRunning;
+    private final ConcurrentLinkedDeque<Packet> packets;
+    private final Vector<Runnable> initialTasks;
+    private final Vector<Runnable> periodicTasks;
+    private final Vector<Runnable> closingTasks;
+
 
 
     // callbacks
@@ -47,7 +49,9 @@ public class DSClient {
         this.clientThread = new Thread(this::clientLogic);
         this.threadRunning = new AtomicBoolean(false);
         this.packets = new ConcurrentLinkedDeque<>();
-        this.tasks = new Vector<>();
+        this.initialTasks = new Vector<>();
+        this.periodicTasks = new Vector<>();
+        this.closingTasks = new Vector<>();
 
         this.telemetryPacketConsumer = telemetryPacketConsumer == null ? p -> {} : telemetryPacketConsumer;
         this.opModesPacketConsumer = opModesPacketConsumer == null ? p -> {} : opModesPacketConsumer;
@@ -77,6 +81,7 @@ public class DSClient {
     }
 
     private void clientLogic(){
+        this.initialTasks.forEach(Runnable::run);
         while (this.threadRunning.get()) {
             try {
                 if (!this.socket.isClosed() && this.socket.isConnected()) {
@@ -85,9 +90,10 @@ public class DSClient {
             } catch (IOException e) {
                 System.err.println("Could not read packets from the server");
             }
-            this.tasks.forEach(Runnable::run);
+            this.periodicTasks.forEach(Runnable::run);
             this.writePackets();
         }
+        this.closingTasks.forEach(Runnable::run);
     }
 
     private void pollPackets() throws IOException {
@@ -141,6 +147,18 @@ public class DSClient {
     }
     public Optional<DataOutputStream> getOutputStream() {
         return Optional.ofNullable(this.output);
+    }
+
+    public Vector<Runnable> getInitialTasks() {
+        return initialTasks;
+    }
+
+    public Vector<Runnable> getPeriodicTasks() {
+        return periodicTasks;
+    }
+
+    public Vector<Runnable> getClosingTasks() {
+        return closingTasks;
     }
 
     public boolean isConnected() {
