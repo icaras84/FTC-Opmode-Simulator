@@ -12,7 +12,7 @@ public class TimerLabel extends JPanel {
 
     public TimerLabel() {
         super(new BorderLayout());
-        this.timeLabel = new JLabel();
+        this.timeLabel = new JLabel("0:00");
         this.timeLabel.setOpaque(false);
         this.timeLabel.setBackground(this.timerBackgroundColor);
         this.timeLabel.setForeground(this.timerTextColor);

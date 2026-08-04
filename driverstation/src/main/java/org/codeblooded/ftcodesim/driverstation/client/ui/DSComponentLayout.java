@@ -30,6 +30,9 @@ public class DSComponentLayout {
 
         contentPanel.add(controlPanel, BorderLayout.NORTH);
         contentPanel.add(telemetryArea, BorderLayout.CENTER);
+
+        componentStyle.stylePanel(controlPanel);
+        componentStyle.styleWindow(contentPanel);
     }
 
     private JPanel buildTopBar(DSComponentStyle componentStyle, ConnectionLabel connectionLabel){
@@ -43,6 +46,8 @@ public class DSComponentLayout {
         output.add(titleLabel);
         output.add(Box.createHorizontalGlue());
         output.add(connectionLabel);
+
+        output.setOpaque(false);
         return output;
     }
 
@@ -68,6 +73,7 @@ public class DSComponentLayout {
         output.add(opModeControlButtons);
         output.add(Box.createVerticalGlue());
 
+        output.setOpaque(false);
         return output;
     }
 }
