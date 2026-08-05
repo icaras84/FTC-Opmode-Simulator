@@ -8,8 +8,6 @@ import org.codeblooded.ftcodesim.driverstation.client.packets.TelemetryPacket;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.Optional;
 import java.util.Vector;
@@ -36,12 +34,13 @@ public class DSClient {
 
 
     // callbacks
+    private Consumer<Boolean> connectionConsumer;
     private Consumer<TelemetryPacket> telemetryPacketConsumer;
     private Consumer<OpModesPacket> opModesPacketConsumer;
 
 
-    public DSClient(Consumer<TelemetryPacket>  telemetryPacketConsumer, Consumer<OpModesPacket> opModesPacketConsumer) {
-        this.socket = new Socket();
+    public DSClient(Consumer<Boolean> connectionConsumer, Consumer<TelemetryPacket>  telemetryPacketConsumer, Consumer<OpModesPacket> opModesPacketConsumer) {
+        this.socket = null;
         this.input = null;
         this.output = null;
         this.connected = false;
@@ -53,24 +52,24 @@ public class DSClient {
         this.periodicTasks = new Vector<>();
         this.closingTasks = new Vector<>();
 
+        this.connectionConsumer = connectionConsumer == null ? b -> {} : connectionConsumer;
         this.telemetryPacketConsumer = telemetryPacketConsumer == null ? p -> {} : telemetryPacketConsumer;
         this.opModesPacketConsumer = opModesPacketConsumer == null ? p -> {} : opModesPacketConsumer;
     }
 
     public boolean attemptConnection(String host, int port) {
         try {
-            if (host == null) {
-                this.socket.connect(new InetSocketAddress(InetAddress.getByName(null), port));
-            } else {
-                this.socket.connect(new InetSocketAddress(host, port));
-            }
+            this.socket = new Socket(host, port);
 
             this.input = new DataInputStream(this.socket.getInputStream());
             this.output = new DataOutputStream(this.socket.getOutputStream());
             this.connected = true;
+
+            this.connectionConsumer.accept(true);
             return true;
         } catch (IOException e) {
             System.err.println("Could not connect to the server");
+            this.connectionConsumer.accept(false);
             return false;
         }
     }
@@ -78,6 +77,10 @@ public class DSClient {
     public void startThread() {
         this.threadRunning.set(true);
         this.clientThread.start();
+    }
+
+    public void stopThread() {
+        this.threadRunning.set(false);
     }
 
     private void clientLogic(){

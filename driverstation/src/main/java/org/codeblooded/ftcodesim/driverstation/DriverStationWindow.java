@@ -3,6 +3,7 @@ package org.codeblooded.ftcodesim.driverstation;
 import com.studiohartman.jamepad.ControllerManager;
 import com.studiohartman.jamepad.ControllerState;
 
+import org.codeblooded.ftcodesim.driverstation.client.DSMVController;
 import org.codeblooded.ftcodesim.driverstation.client.packets.*;
 
 import javax.swing.*;
@@ -508,6 +509,6 @@ public class DriverStationWindow extends JFrame {
     public static void main(String[] args) {
         int port = args.length > 0 ? Integer.parseInt(args[0]) : 8080;
 
-        SwingUtilities.invokeLater(() -> new DriverStationWindow(port));
+        DSMVController controller = new DSMVController(port);
     }
 }

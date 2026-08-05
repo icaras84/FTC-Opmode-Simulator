@@ -4,6 +4,7 @@ import org.codeblooded.ftcodesim.driverstation.OpModeState;
 import org.codeblooded.ftcodesim.driverstation.client.packets.InitOpModePacket;
 import org.codeblooded.ftcodesim.driverstation.client.packets.OpModesPacket;
 import org.codeblooded.ftcodesim.driverstation.client.packets.Packet;
+import org.codeblooded.ftcodesim.driverstation.client.packets.TelemetryPacket;
 
 import java.util.Optional;
 import java.util.Vector;
@@ -42,20 +43,17 @@ public class DSModel {
     }
 
     public void setSelectedOpMode(int selectedOpMode) {
-        if (selectedOpMode < 0 || selectedOpMode >= this.availableOpModes.size()) {
-            throw new IndexOutOfBoundsException("Selected opmode is out of bounds.");
-        }
         this.selectedOpMode = selectedOpMode;
         this.transitionOpModeState(OpModeState.WAIT_FOR_INIT);
     }
 
     public Optional<InitOpModePacket> getSelectedOpMode() {
         if (!hasSelectedOpMode()) return Optional.empty();
-        return Optional.ofNullable(this.availableOpModes.get(this.selectedOpMode));
+        return Optional.of(this.availableOpModes.get(this.selectedOpMode));
     }
 
-    public Optional<OpModeState> getOpModeState() {
-        return Optional.ofNullable(this.opModeState);
+    public OpModeState getOpModeState() {
+        return this.opModeState;
     }
 
     public void transitionOpModeState(OpModeState opModeState) {
@@ -72,6 +70,10 @@ public class DSModel {
 
     public void setTelemetryText(String telemetryText) {
         this.telemetryText = telemetryText;
+    }
+
+    public void setTelemetryText(TelemetryPacket packet) {
+        this.telemetryText = packet.telemetry;
     }
 
     public String getTelemetryText() {
