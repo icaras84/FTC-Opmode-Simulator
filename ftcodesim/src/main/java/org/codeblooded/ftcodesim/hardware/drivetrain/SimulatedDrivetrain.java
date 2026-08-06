@@ -58,14 +58,23 @@ public abstract class SimulatedDrivetrain implements SimHardwareMechanism {
         double kBackEMF = maxAlpha / maxOmega;
         double kCoulombFriction = config.naturalDeceleration / config.wheelRadius;
 
-        double[] zeroPowerBrakeCoefficients  = new double[]{
-                    kA, 0, kBackEMF, kCoulombFriction
+        double[] zeroPowerBrakeCoefficients = new double[]{
+                    kA, kBackEMF, kBackEMF, kCoulombFriction
         };
         double[] motorCoefficients = new double[]{
-                kA, kBackEMF, 0, kCoulombFriction
+                kA, kBackEMF, kBackEMF, kCoulombFriction
         };
 
-        SimMotorConfig motorConfig = new SimMotorConfig(name, MotorModel.fromString("a=Au-Bv*abs(d)-Cv-Dsgn(v)"), motorCoefficients, zeroPowerBrakeCoefficients, config.staticVelocityRegion/config.wheelRadius, config.staticFriction/config.wheelRadius, voltageSensor);
+        MotorModel model = new MotorModel(
+                (v,d,b) -> d*b,
+                (v,d,b) -> Math.signum(v) == Math.signum(d) ? -v * Math.abs(d) : 0,
+                (v,d,b) -> Math.signum(v) != Math.signum(d) ? -v : 0,
+                (v,d,b) -> -Math.signum(v)
+        );
+
+       // MotorModel model = MotorModel.fromString("a=Au-Bv*abs(d)-Cv-Dsgn(v)");
+
+        SimMotorConfig motorConfig = new SimMotorConfig(name, model, motorCoefficients, zeroPowerBrakeCoefficients, config.staticVelocityRegion/config.wheelRadius, config.staticFriction/config.wheelRadius, voltageSensor);
         return hardwareMap.motor(motorConfig);
     }
 
