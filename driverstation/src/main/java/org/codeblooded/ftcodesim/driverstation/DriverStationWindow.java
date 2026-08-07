@@ -512,12 +512,21 @@ public class DriverStationWindow extends JFrame {
         //SwingUtilities.invokeLater(() -> new DriverStationWindow(port));
 
         JFrame frame = new JFrame("DriverStation");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         frame.setSize(800, 600);
 
         DSClientView view = new DSClientView(port, (p)->{});
 
         frame.getContentPane().add(view, BorderLayout.CENTER);
+
+        frame.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                view.getClientModel().dispose();
+                System.exit(0);
+            }
+        });
+
         frame.setVisible(true);
     }
 }
