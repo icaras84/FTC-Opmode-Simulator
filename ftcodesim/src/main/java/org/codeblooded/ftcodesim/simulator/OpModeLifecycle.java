@@ -34,7 +34,7 @@ public class OpModeLifecycle {
 
         SimFtcLogger ftcLog = new SimFtcLogger();
         ftcLog.start(opMode, 5800, "", true, "sim-logs");
-        Logger.setSimulation(true);
+       // Logger.setSimulation(true);
 
         long start = System.nanoTime();
         Logger.setTimeSource(() -> (System.nanoTime() - start) * 1e-9);
@@ -63,8 +63,6 @@ public class OpModeLifecycle {
         opMode.time = opMode.getRuntime();
         opMode.gamepad1.fromByteArray(latestGamepad1Data);
         opMode.gamepad2.fromByteArray(latestGamepad2Data);
-
-        simHardwareMap.update();
 
         long logStart = System.nanoTime();
 
