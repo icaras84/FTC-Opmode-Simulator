@@ -14,6 +14,7 @@ import java.net.Socket;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
+@Deprecated
 public class DriverStationConnection {
     private final Consumer<TelemetryPacket> telemetryConsumer;
     private final Runnable connectedCallback;
