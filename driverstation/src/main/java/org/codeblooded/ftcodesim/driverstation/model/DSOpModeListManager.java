@@ -1,7 +1,7 @@
 package org.codeblooded.ftcodesim.driverstation.model;
 
-import org.codeblooded.ftcodesim.driverstation.packets.InitOpModePacket;
-import org.codeblooded.ftcodesim.driverstation.packets.OpModesPacket;
+import org.codeblooded.ftcodesim.driverstation.connection.packets.InitOpModePacket;
+import org.codeblooded.ftcodesim.driverstation.connection.packets.OpModesPacket;
 
 import java.util.Objects;
 import java.util.Optional;

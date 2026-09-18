@@ -3,7 +3,8 @@ package org.codeblooded.ftcodesim.driverstation;
 import com.studiohartman.jamepad.ControllerManager;
 import com.studiohartman.jamepad.ControllerState;
 
-import org.codeblooded.ftcodesim.driverstation.packets.*;
+import org.codeblooded.ftcodesim.driverstation.connection.packets.*;
+import org.codeblooded.ftcodesim.driverstation.model.OpModeState;
 
 import javax.swing.*;
 import javax.swing.border.*;
