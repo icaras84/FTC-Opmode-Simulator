@@ -4,8 +4,8 @@ import org.codeblooded.ftcodesim.driverstation.connection.packets.InitOpModePack
 import org.codeblooded.ftcodesim.driverstation.connection.packets.OpModesPacket;
 
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Vector;
+import java.util.function.Consumer;
 
 /**
  * This class is a wrapper for a vector of OpModes available to the client from the server
@@ -36,31 +36,35 @@ public class DSOpModeListManager {
         this.availableOpModes.clear();
     }
 
-    public Optional<InitOpModePacket> searchAndServe(InitOpModePacket requestedOpMode){
+    public void searchAndServe(InitOpModePacket requestedOpMode, Consumer<InitOpModePacket> found, Runnable onElse){
         if (this.availableOpModes.contains(requestedOpMode)) {
-            return Optional.of(this.availableOpModes.get(this.availableOpModes.indexOf(requestedOpMode)));
+            found.accept(this.availableOpModes.get(this.availableOpModes.indexOf(requestedOpMode)));
+            return;
         }
 
-        return Optional.empty();
+        onElse.run();
     }
 
-    public Optional<InitOpModePacket> searchAndServe(int idx){
+    public void searchAndServe(int idx, Consumer<InitOpModePacket> found, Runnable onElse){
         if (!(idx < 0 || idx > this.availableOpModes.size() - 1)){
-            return Optional.of(this.availableOpModes.elementAt(idx));
+            found.accept(this.availableOpModes.elementAt(idx));
+            return;
         }
 
-        return Optional.empty();
+        onElse.run();
     }
 
-    public Optional<InitOpModePacket> searchAndServe(String group, String name){
+    public void searchAndServe(String group, String name, Consumer<InitOpModePacket> found, Runnable onElse){
         if ((group != null && name != null) && (!group.isEmpty() && !name.isEmpty())) {
             for (InitOpModePacket opmode : this.availableOpModes) {
-                if (Objects.equals(opmode.group, group) && Objects.equals(opmode.name, name))
-                    return Optional.of(opmode);
+                if (Objects.equals(opmode.group, group) && Objects.equals(opmode.name, name)) {
+                    found.accept(opmode);
+                    return;
+                }
             }
         }
 
-        return Optional.empty();
+        onElse.run();
     }
 
     public Vector<InitOpModePacket> getAvailableOpModes(){
