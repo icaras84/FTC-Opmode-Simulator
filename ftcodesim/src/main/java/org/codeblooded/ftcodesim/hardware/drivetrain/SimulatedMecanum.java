@@ -1,6 +1,7 @@
 package org.codeblooded.ftcodesim.hardware.drivetrain;
 
 
+import org.codeblooded.fit.MotorModel;
 import org.codeblooded.ftcodesim.ascope.boundaries.FieldBoundary;
 import org.codeblooded.ftcodesim.ascope.boundaries.MotionVector;
 import org.codeblooded.ftcodesim.hardware.devices.SimMotor;
@@ -16,7 +17,11 @@ public class SimulatedMecanum extends SimulatedDrivetrain {
     private final double wheelRadius;
     private final SimMecanumConfig config;
 
-    private final double strafeEfficiency;
+    private double strafeEfficiency;
+
+    double forwardBrake;
+    double strafeBrake;
+    double headingBrake;
 
     BrakingModel forward;
     BrakingModel strafe;
@@ -28,15 +33,19 @@ public class SimulatedMecanum extends SimulatedDrivetrain {
         R = config.wheelbase / 2 + config.trackWidth / 2;
         wheelRadius = config.wheelRadius;
         this.config = config;
+//
+//        forwardBrake = findRegenerativeBrakingCoefficient(config.foresightConfig.quadraticBrakeCoefficients.get().get(0,0), config.foresightConfig.linearBrakeCoefficients.get().get(0,0), config.foresightConfig.naturalForwardDeceleration.get(), config.foresightConfig.maxAchievableForwardVelocity.get());
+//        headingBrake = findRegenerativeBrakingCoefficient(config.foresightConfig.headingBrakeCoefficients.get().x(), config.foresightConfig.headingBrakeCoefficients.get().y(), config.turnNaturalDeceleration, config.maxAngularVelocity);
+//        strafeBrake = findRegenerativeBrakingCoefficient(config.foresightConfig.quadraticBrakeCoefficients.get().get(1,1), config.foresightConfig.linearBrakeCoefficients.get().get(1,1), config.foresightConfig.naturalStrafeDeceleration.get(), config.foresightConfig.maxAchievableStrafeVelocity.get());
 
-        strafeEfficiency = config.foresightConfig.maxAchievableStrafeVelocity.get() / config.foresightConfig.maxAchievableForwardVelocity.get();
+        //strafeEfficiency = config.foresightConfig.maxAchievableStrafeVelocity.get() / config.foresightConfig.maxAchievableForwardVelocity.get();
 
         forward = fitBrakingModel(config.foresightConfig.quadraticBrakeCoefficients.get().get(0,0), config.foresightConfig.linearBrakeCoefficients.get().get(0,0), config.foresightConfig.maxAchievableForwardVelocity.get());
 
         strafe = fitBrakingModel(config.foresightConfig.quadraticBrakeCoefficients.get().get(1,1), config.foresightConfig.linearBrakeCoefficients.get().get(1,1), config.foresightConfig.maxAchievableStrafeVelocity.get());
 
         heading = fitBrakingModel(config.foresightConfig.headingBrakeCoefficients.get().x(), config.foresightConfig.headingBrakeCoefficients.get().y(), config.maxAngularVelocity);
-
+        strafeEfficiency = 1;
     }
 
     public static double interpolateRadius(double xRadius, double yRadius, double theta) {
@@ -415,11 +424,34 @@ public class SimulatedMecanum extends SimulatedDrivetrain {
                 * Math.log1p(x);
     }
 
+    private MotionVector saturateVelocity(MotionVector velocity) {
+        double maxForward =
+                config.foresightConfig.maxAchievableForwardVelocity.get();
+
+        double maxStrafe =
+                config.foresightConfig.maxAchievableStrafeVelocity.get();
+
+        double ratio =
+                Math.abs(velocity.x) / maxForward
+                        + Math.abs(velocity.y) / maxStrafe;
+
+        if (ratio <= 1.0)
+            return velocity;
+
+        double scale = 1.0 / ratio;
+
+        velocity.x *= scale;
+        velocity.y *= scale;
+
+        return velocity;
+    }
+
     @Override
     public void update(double deltaTime) {
         for (int i = 0; i < motors.length; i++) {
             SimMotor motor = motors[i];
             motorAngularAccelerations[i] = motor.getAcceleration();
+            motorPowers[i] = motor.getPower();
 
             Logger.recordOutput("Mecanum/wheel/angular vels radians per second/" + motor.deviceName, motor.getVelocity());
             Logger.recordOutput("Mecanum/wheel/powers/" + motor.deviceName, motor.getPower());
@@ -428,6 +460,7 @@ public class SimulatedMecanum extends SimulatedDrivetrain {
 
         MotionVector robotVel = velocity.toRobotFrame(position.theta);
         MotionVector robotAccel = forwardKinematics(motorAngularAccelerations);
+        MotionVector motorEffort = powerKinematics(motorPowers);
 
         robotVel.logV("Mecanum/robot/rawVelocity inches per second");
         robotAccel.logV("Mecanum/robot/rawAcceleration inches per second squared");
@@ -465,38 +498,88 @@ public class SimulatedMecanum extends SimulatedDrivetrain {
             yDecel = decel * vy / speed;
         }
 
-        if (Math.signum(robotVel.x) != Math.signum(robotAccel.x) || robotAccel.x == 0)
-            robotAccel.x -= robotVel.x * forward.A2 + forward.B2 * Math.signum(robotVel.x) + xDecel;
+        double kCoulombFriction = config.foresightConfig.naturalForwardDeceleration.get();
+        double backEMF = config.maxAcceleration / config.foresightConfig.maxAchievableForwardVelocity.get();
+        double kA = (backEMF * (config.foresightConfig.maxAchievableForwardVelocity.get()) + kCoulombFriction) / config.nominalVoltage;
+        double[] xCoefficients = new double[]{
+                kA, backEMF, 0, 0, 0
+        };
 
-        if (Math.signum(robotVel.y) != Math.signum(robotAccel.y) || robotAccel.y == 0)
-            robotAccel.y -= robotVel.y * strafe.A2 + strafe.B2 * Math.signum(robotVel.y) - yDecel;
+        // TODO add lag button to distrupt path or apply forces
 
-        if (Math.signum(robotVel.theta) != Math.signum(robotAccel.theta) || robotAccel.theta == 0)
-            robotAccel.theta -= robotVel.theta * heading.A2 * 7 + heading.B2 * Math.signum(robotVel.theta) - config.turnNaturalDeceleration * Math.signum(robotVel.theta);
+        double kCoulombFriction2 = config.foresightConfig.naturalStrafeDeceleration.get();
+        double backEMF2 = config.maxAcceleration / config.foresightConfig.maxAchievableStrafeVelocity.get();
+        double kA2 = (backEMF2 * (config.foresightConfig.maxAchievableStrafeVelocity.get()) + kCoulombFriction2) / config.nominalVoltage;
+        double[] yCoefficients = new double[]{
+                kA2, backEMF2, 0, 0, 0
+        };
+
+        double kCoulombFriction3 = config.turnNaturalDeceleration;
+        double backEMF3 = config.maxTurnAccel / config.maxAngularVelocity;
+        double kA3 = (backEMF3 * (config.maxAngularVelocity) + kCoulombFriction3) / config.nominalVoltage;
+        double[] headingCoefficients = new double[]{
+                kA3, backEMF3, 0, 0, 0
+        };
+
+        MotorModel model = new MotorModel(
+                (v, d, b) -> d * b,
+                (v, d, b) -> Math.signum(v) == Math.signum(d) ? -v * Math.abs(d) : 0, // back-emf
+                (v, d, b) -> Math.signum(v) != Math.signum(d) && d != 0 ? -v : 0,  // regenerative braking, not dependent on duty bc max braking is way stronger than max accel
+                (v, d, b) -> d == 0 ? -v : 0,  // short circuiting brake mode
+                (v, d, b) -> -Math.signum(v)
+        );
+
+        Logger.recordOutput("theta motor effort", motorEffort.theta);
+
+        double voltage = voltageSensor.getVoltage();
+
+        robotAccel.x = model.predict(xCoefficients, robotVel.x, motorEffort.x, voltage);
+        robotAccel.y = model.predict(yCoefficients, robotVel.y, motorEffort.y, voltage);
+        robotAccel.theta = model.predict(headingCoefficients, robotVel.theta, motorEffort.theta, voltage);
 
         boolean isStationary =
-                Math.abs(robotVel.x) < config.staticVelocityRegion
-                        && Math.abs(robotVel.y) < config.staticVelocityRegion
-                        && Math.abs(robotVel.theta) < config.staticVelocityRegion
-                        && Math.abs(robotAccel.x) < config.foresightConfig.naturalForwardDeceleration.get()
-                        && Math.abs(robotAccel.y) < config.foresightConfig.naturalStrafeDeceleration.get()
-                        && Math.abs(robotAccel.theta) < config.turnNaturalDeceleration;
+                Math.abs(robotVel.x) <= config.staticVelocityRegion
+                        && Math.abs(robotVel.y) <= config.staticVelocityRegion
+                        && Math.abs(robotVel.theta) <= 0.1
+                        && Math.abs(robotAccel.x) <= config.foresightConfig.naturalForwardDeceleration.get() * 1.1
+                        && Math.abs(robotAccel.y) <= config.foresightConfig.naturalStrafeDeceleration.get() * 1.1
+                        && Math.abs(robotAccel.theta) <= config.turnNaturalDeceleration * 1.1;
 
         if (isStationary) {
             robotVel = new MotionVector(0, 0, 0);
-            acceleration = new MotionVector(0, 0, 0);
+            robotAccel = new MotionVector(0, 0, 0);
         } else {
-//            rawAcceleration.x -= xDecel;
-//            rawAcceleration.y -= yDecel;
-//            rawAcceleration.theta -=
-//                        config.turnNaturalDeceleration * Math.signum(robotVel.theta);
+            robotAccel.x -= config.foresightConfig.naturalForwardDeceleration.get() * Math.signum(robotVel.x);
+            robotAccel.y -= config.foresightConfig.naturalStrafeDeceleration.get() * Math.signum(robotVel.y);
+            robotAccel.theta -= config.turnNaturalDeceleration * Math.signum(robotVel.theta);
+
+            if (Math.signum(robotVel.x) != Math.signum(robotAccel.x) || robotAccel.x == 0)
+                robotAccel.x -= robotVel.x / (2.0 * config.foresightConfig.quadraticBrakeCoefficients.get().get(0,0) * Math.abs(robotVel.x) + config.foresightConfig.linearBrakeCoefficients.get().get(0,0)) - xDecel;
+
+            if (Math.signum(robotVel.y) != Math.signum(robotAccel.y) || robotAccel.y == 0)
+                robotAccel.y -= robotVel.y / (2.0 * config.foresightConfig.quadraticBrakeCoefficients.get().get(1,1) * Math.abs(robotVel.y) + config.foresightConfig.linearBrakeCoefficients.get().get(1,1)) - yDecel;
+
+            if (Math.signum(robotVel.theta) != Math.signum(robotAccel.theta) || robotAccel.theta == 0) {
+                double theta = robotVel.theta;
+
+                double A = config.foresightConfig.headingBrakeCoefficients.get().x();
+                double B = config.foresightConfig.headingBrakeCoefficients.get().y();
+
+                double angularAcceleration =
+                        -theta / (2.0 * A * Math.abs(theta) + B);
+                robotAccel.theta += angularAcceleration + config.turnNaturalDeceleration * Math.signum(robotVel.theta);
+            }
         }
 
         robotVel.logV("Mecanum/robot/velocity inches per second");
         robotAccel.logV("Mecanum/robot/acceleration inches per second squared");
+        Logger.recordOutput("isStationary", isStationary);
 
-        acceleration = robotAccel.toFieldFrame(position.theta);
-        velocity = robotVel.toFieldFrame(position.theta).step(acceleration, deltaTime);
+        //acceleration = robotAccel.toFieldFrame(position.theta);
+
+        robotVel = robotVel.step(robotAccel, deltaTime);
+        robotVel = saturateVelocity(robotVel);
+        velocity = robotVel.toFieldFrame(position.theta);
 
         MotionVector legalPosition = position;
         position = position.step(velocity, deltaTime);
@@ -554,78 +637,24 @@ public class SimulatedMecanum extends SimulatedDrivetrain {
 
         double x = (fl + fr + bl + br) / 4.0;
         double y = (-fl + fr + bl - br) / 4.0;
+        //double theta = (-this.motors[FL].getTurnForce() + this.motors[FR].getTurnForce() - this.motors[BL].getTurnForce() + this.motors[BR].getTurnForce()) / (4.0 * R);
         double theta = (-fl + fr - bl + br) / (4.0 * R);
 
-//        if (Math.signum(robotVel.x) != Math.signum(x) || x == 0)
-//            x -= robotVel.x * forward.A2 + forward.B2 * Math.signum(robotVel.x) + xDecel;
-//
-//        if (Math.signum(robotVel.y) != Math.signum(y) || y == 0)
-//            y -= robotVel.y * strafe.A2 + strafe.B2 * Math.signum(robotVel.y) - yDecel;
-//
-//        if (Math.signum(robotVel.theta) != Math.signum(theta) || rawAcceleration.theta == 0)
-//            theta -= robotVel.theta * heading.A2 + heading.B2 * Math.signum(robotVel.theta) - config.turnNaturalDeceleration * Math.signum(robotVel.theta);
-
-        return new MotionVector(x, y, theta);
+        return new MotionVector(x, y * strafeEfficiency, theta);
     }
 
-    MotionVector forwardKinematics(double[] motors, MotionVector robotVel, double xDecel, double yDecel) {
-        double fl = motors[FL] * wheelRadius;
-        double fr = motors[FR] * wheelRadius;
-        double bl = motors[BL] * wheelRadius;
-        double br = motors[BR] * wheelRadius;
+    MotionVector powerKinematics(double[] motors) {
+        double fl = motors[FL];
+        double fr = motors[FR];
+        double bl = motors[BL];
+        double br = motors[BR];
 
         double x = (fl + fr + bl + br) / 4.0;
         double y = (-fl + fr + bl - br) / 4.0;
-        double theta = (-fl + fr - bl + br) / (4.0 * R);
+        //double theta = (-this.motors[FL].getTurnForce() + this.motors[FR].getTurnForce() - this.motors[BL].getTurnForce() + this.motors[BR].getTurnForce()) / (4.0 * R);
+        double theta = (-fl + fr - bl + br) / (4.0);
 
-        // Convert current chassis velocity back into wheel linear velocities.
-        double flVel = robotVel.x - robotVel.y - robotVel.theta * R;
-        double frVel = robotVel.x + robotVel.y + robotVel.theta * R;
-        double blVel = robotVel.x + robotVel.y - robotVel.theta * R;
-        double brVel = robotVel.x - robotVel.y + robotVel.theta * R;
-
-        // Full braking magnitude for each chassis axis.
-        double xBrake =
-                robotVel.x * forward.A2
-                        + forward.B2 * Math.signum(robotVel.x)
-                        + xDecel;
-
-        double yBrake =
-                robotVel.y * strafe.A2
-                        + strafe.B2 * Math.signum(robotVel.y)
-                        - yDecel;
-
-        double thetaBrake =
-                robotVel.theta * heading.A2
-                        + heading.B2 * Math.signum(robotVel.theta)
-                        - config.turnNaturalDeceleration * Math.signum(robotVel.theta);
-
-        // Each wheel contributes 1/4 of x/y and 1/(4R) of theta.
-        if (against(flVel, fl)) {
-            x     -= xBrake / 4.0;
-            y     += yBrake / 4.0;
-            theta += thetaBrake / (4.0 * R);
-        }
-
-        if (against(frVel, fr)) {
-            x     -= xBrake / 4.0;
-            y     -= yBrake / 4.0;
-            theta -= thetaBrake / (4.0 * R);
-        }
-
-        if (against(blVel, bl)) {
-            x     -= xBrake / 4.0;
-            y     -= yBrake / 4.0;
-            theta += thetaBrake / (4.0 * R);
-        }
-
-        if (against(brVel, br)) {
-            x     -= xBrake / 4.0;
-            y     += yBrake / 4.0;
-            theta -= thetaBrake / (4.0 * R);
-        }
-
-        return new MotionVector(x, y, theta);
+        return new MotionVector(x, y * strafeEfficiency, theta);
     }
 
     private boolean against(double wheelVelocity, double wheelPower) {
@@ -637,70 +666,13 @@ public class SimulatedMecanum extends SimulatedDrivetrain {
     @Override
     double[] inverseKinematics(MotionVector motion) {
         double x = motion.x;
-        double y = motion.y;
+        double y = motion.y / strafeEfficiency;
 
         return new double[]{
                 (x - y - motion.theta * R) / wheelRadius, // FL
                 (x + y + motion.theta * R) / wheelRadius, // FR
                 (x + y - motion.theta * R) / wheelRadius, // BL
                 (x - y + motion.theta * R) / wheelRadius  // BR
-        };
-    }
-
-    double[] inverseKinematics(MotionVector motion, MotionVector robotVel, double xDecel, double yDecel) {
-        double x = motion.x;
-        double y = motion.y;
-        double theta = motion.theta;
-
-        double flVel = robotVel.x - robotVel.y - robotVel.theta * R;
-        double frVel = robotVel.x + robotVel.y + robotVel.theta * R;
-        double blVel = robotVel.x + robotVel.y - robotVel.theta * R;
-        double brVel = robotVel.x - robotVel.y + robotVel.theta * R;
-
-        double xBrake =
-                robotVel.x * forward.A2
-                        + forward.B2 * Math.signum(robotVel.x)
-                        + xDecel;
-
-        double yBrake =
-                robotVel.y * strafe.A2
-                        + strafe.B2 * Math.signum(robotVel.y)
-                        - yDecel;
-
-        double thetaBrake =
-                robotVel.theta * heading.A2
-                        + heading.B2 * Math.signum(robotVel.theta)
-                        - config.turnNaturalDeceleration * Math.signum(robotVel.theta);
-
-        if (against(flVel, x - y - theta * R)) {
-            x += xBrake / 4.0;
-            y -= yBrake / 4.0;
-            theta -= thetaBrake / 4.0;
-        }
-
-        if (against(frVel, x + y + theta * R)) {
-            x += xBrake / 4.0;
-            y += yBrake / 4.0;
-            theta += thetaBrake / 4.0;
-        }
-
-        if (against(blVel, x + y - theta * R)) {
-            x += xBrake / 4.0;
-            y += yBrake / 4.0;
-            theta -= thetaBrake / 4.0;
-        }
-
-        if (against(brVel, x - y + theta * R)) {
-            x += xBrake / 4.0;
-            y -= yBrake / 4.0;
-            theta += thetaBrake / 4.0;
-        }
-
-        return new double[]{
-                (x - y - theta * R) / wheelRadius, // FL
-                (x + y + theta * R) / wheelRadius, // FR
-                (x + y - theta * R) / wheelRadius, // BL
-                (x - y + theta * R) / wheelRadius  // BR
         };
     }
 }

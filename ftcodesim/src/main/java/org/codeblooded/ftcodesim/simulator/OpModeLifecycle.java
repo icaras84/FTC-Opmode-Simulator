@@ -85,6 +85,12 @@ public class OpModeLifecycle {
         int physicsCount = 0;
         while ((System.nanoTime() - loopStart) * 1e-6 < loopTimeMs) {
             simHardwareMap.update();
+            try {
+                Thread.sleep(1);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            }
             physicsCount++;
         }
 

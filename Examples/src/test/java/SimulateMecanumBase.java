@@ -27,16 +27,17 @@ public class SimulateMecanumBase {
         config.wheelbase = 16;
         config.trackWidth = 16;
         config.wheelRadius = 1.889765;
-        config.staticVelocityRegion = 1e-3;
+        config.staticVelocityRegion = 4;
         config.staticFriction = 55;
+
         config.maxAcceleration = 150;
-        config.turnNaturalDeceleration = 3;
-        config.quadraticBraking = 0.0024;
-        config.linearBraking = 0.06447;
-        config.naturalDeceleration = 49;
+        config.turnNaturalDeceleration = 2;
+        config.maxTurnAccel = 14;
+
         config.robotGeometry = new RobotGeometry(18, 18, 0, 0);
         config.robotModel = SourceType.ROBOT_MECANUM_BASE;
-        config.maxAngularVelocity = 5.175;
+//        config.maxAngularVelocity = 5.175;
+        config.maxAngularVelocity = 3;
 
         config.foresightConfig = new ForesightConfig(
                 c -> {

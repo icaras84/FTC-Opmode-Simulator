@@ -40,6 +40,11 @@ public class SimMotor implements DcMotorEx, SimHardwareDevice {
         velocity += acceleration * deltaTime;
     }
 
+    public double getTurnForce() {
+        double voltage = config.voltageSensor.getVoltage();
+        return config.motorModel.predict(config.turn, velocity, power, voltage);
+    }
+
     @Override
     public void reset() {
         power = 0;

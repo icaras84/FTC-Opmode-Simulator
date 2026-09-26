@@ -14,7 +14,7 @@ import static org.codeblooded.ftcodesim.hardware.drivetrain.SimulatedMecanum.int
 public abstract class SimulatedDrivetrain implements SimHardwareMechanism {
     protected final SimMotor[] motors;
 
-    public MotionVector position = new MotionVector(0, 0, 0);
+    public MotionVector position = new MotionVector(72, 72, 0);
     public MotionVector velocity = new MotionVector(0, 0, 0);
     public MotionVector acceleration = new MotionVector(0, 0, 0);
 
@@ -24,19 +24,23 @@ public abstract class SimulatedDrivetrain implements SimHardwareMechanism {
     public SimVoltageSensor voltageSensor;
 
     public double regenerativeBraking;
+    public double regenerativeBraking2;
 
     protected double[] motorAngularVelocities;
     protected double[] motorAngularAccelerations;
+    double[] motorPowers;
 
     public SimulatedDrivetrain(SimDrivetrainConfig config, String... motorNames) {
         this.config = config;
         this.motors = new SimMotor[motorNames.length];
         this.motorNames = motorNames;
 
-        regenerativeBraking = findRegenerativeBrakingCoefficient(config.quadraticBraking, config.linearBraking, config.naturalDeceleration, config.maxVelocity);
+        regenerativeBraking = findRegenerativeBrakingCoefficient(config.foresightConfig.quadraticBrakeCoefficients.get().get(0,0), config.foresightConfig.linearBrakeCoefficients.get().get(0,0), config.foresightConfig.naturalForwardDeceleration.get(), config.foresightConfig.maxAchievableForwardVelocity.get());
+        regenerativeBraking2 = findRegenerativeBrakingCoefficient(config.foresightConfig.headingBrakeCoefficients.get().x(), config.foresightConfig.headingBrakeCoefficients.get().y(), 2, config.maxAngularVelocity);
 
         motorAngularVelocities = new double[motors.length];
         motorAngularAccelerations = new double[motors.length];
+        motorPowers = new double[motors.length];
     }
 
     public Pose2D getActualPose() {
@@ -89,8 +93,8 @@ public abstract class SimulatedDrivetrain implements SimHardwareMechanism {
         double kCoulombFriction = config.foresightConfig.naturalForwardDeceleration.get() / config.wheelRadius;
         double backEMF = config.maxAcceleration / config.foresightConfig.maxAchievableForwardVelocity.get();
         double kA = (backEMF * (config.foresightConfig.maxAchievableForwardVelocity.get() / config.wheelRadius) + kCoulombFriction) / config.nominalVoltage;
-        //kCoulombFriction = 0; // friction is handled by mecanum model
-        //regenerativeBraking = 0;
+        kCoulombFriction = 0; // friction is handled by mecanum model
+        regenerativeBraking = 0;
         //regenerativeBraking *= 3;
 
         double[] zeroPowerBrakeCoefficients = new double[]{
@@ -99,17 +103,19 @@ public abstract class SimulatedDrivetrain implements SimHardwareMechanism {
         double[] motorCoefficients = new double[]{
                 kA, backEMF, regenerativeBraking, 0, kCoulombFriction
         };
+        double[] turn = new double[]{
+                (config.maxAngularVelocity + 2) / config.nominalVoltage, 0, regenerativeBraking2, regenerativeBraking2, 2
+        };
 
         MotorModel model = new MotorModel(
                 (v,d,b) -> d*b,
                 (v,d,b) -> Math.signum(v) == Math.signum(d) ? -v * Math.abs(d) : 0, // back-emf
                 (v,d,b) -> Math.signum(v) != Math.signum(d) && d != 0 ? -v: 0,  // regenerative braking, not dependent on duty bc max braking is way stronger than max accel
-                //(v,d,b) -> 0,
                 (v,d,b) -> d == 0 ? -v: 0,  // short circuiting brake mode
                 (v,d,b) -> -Math.signum(v)
         );
 
-        SimMotorConfig motorConfig = new SimMotorConfig(name, model, motorCoefficients, zeroPowerBrakeCoefficients, config.staticVelocityRegion/config.wheelRadius, config.staticFriction/config.wheelRadius, voltageSensor);
+        SimMotorConfig motorConfig = new SimMotorConfig(name, model, motorCoefficients, zeroPowerBrakeCoefficients, turn, config.staticVelocityRegion/config.wheelRadius, config.staticFriction/config.wheelRadius, voltageSensor);
         return hardwareMap.motor(motorConfig);
     }
 

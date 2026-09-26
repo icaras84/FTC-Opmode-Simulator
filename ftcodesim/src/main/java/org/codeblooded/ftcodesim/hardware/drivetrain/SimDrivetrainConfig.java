@@ -27,4 +27,6 @@ public abstract class SimDrivetrainConfig {
 
     public RobotGeometry robotGeometry;
     public SourceType robotModel;
+
+    public double maxTurnAccel;
 }
