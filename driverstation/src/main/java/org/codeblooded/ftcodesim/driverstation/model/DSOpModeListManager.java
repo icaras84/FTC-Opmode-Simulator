@@ -4,6 +4,7 @@ import org.codeblooded.ftcodesim.driverstation.connection.packets.InitOpModePack
 import org.codeblooded.ftcodesim.driverstation.connection.packets.OpModesPacket;
 
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Vector;
 import java.util.function.Consumer;
 
@@ -13,6 +14,7 @@ import java.util.function.Consumer;
 public class DSOpModeListManager {
 
     private final Vector<InitOpModePacket> availableOpModes;
+    private InitOpModePacket selectedOpMode;
 
     public DSOpModeListManager(){
         this.availableOpModes = new Vector<>();
@@ -69,5 +71,13 @@ public class DSOpModeListManager {
 
     public Vector<InitOpModePacket> getAvailableOpModes(){
         return this.availableOpModes;
+    }
+
+    public Optional<InitOpModePacket> getSelectedOpMode() {
+        return Optional.ofNullable(this.selectedOpMode);
+    }
+
+    public void setSelectedOpMode(InitOpModePacket selectedOpMode) {
+        this.selectedOpMode = selectedOpMode;
     }
 }

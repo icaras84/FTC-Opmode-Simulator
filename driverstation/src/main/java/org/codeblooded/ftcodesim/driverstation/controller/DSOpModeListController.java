@@ -2,6 +2,7 @@ package org.codeblooded.ftcodesim.driverstation.controller;
 
 import org.codeblooded.ftcodesim.driverstation.connection.packets.InitOpModePacket;
 import org.codeblooded.ftcodesim.driverstation.connection.packets.OpModesPacket;
+import org.codeblooded.ftcodesim.driverstation.misc.Publisher;
 import org.codeblooded.ftcodesim.driverstation.model.DSOpModeListManager;
 
 import java.util.Optional;
@@ -19,16 +20,13 @@ public class DSOpModeListController {
 
     private final DSOpModeListManager model;
     private final UIMethods ui;
-    private InitOpModePacket opmode;
-    @SuppressWarnings("All") // misusing optionals as fields, but helpful for one-liners
-    private Optional<Consumer<Optional<InitOpModePacket>>> selectionListener;
+    private final Publisher<Optional<InitOpModePacket>> selectionListeners;
 
     public DSOpModeListController(DSOpModeListManager model, UIMethods ui, Consumer<Optional<InitOpModePacket>> selectionListener) {
         this.model = model;
         this.ui = ui;
         this.ui.hookController(this);
-        this.opmode = null;
-        this.selectionListener = Optional.ofNullable(selectionListener);
+        this.selectionListeners = Publisher.empty();
     }
 
     public void registerOpModes(OpModesPacket packet){
@@ -51,29 +49,21 @@ public class DSOpModeListController {
     }
 
     private void onValidOpMode(InitOpModePacket opmode){
+        this.model.setSelectedOpMode(opmode);
         this.ui.onOpModeSelect(opmode);
-        this.opmode = opmode;
 
-        this.selectionListener.ifPresent(listener -> listener.accept(this.getSelectedOpMode()));
+        this.selectionListeners.updateAll(Optional.of(opmode));
     }
 
     public void deselectOpMode(){
+        this.model.setSelectedOpMode(null);
         this.ui.onOpModeDeselect();
-        this.opmode = null;
 
-        this.selectionListener.ifPresent(listener -> listener.accept(this.getSelectedOpMode()));
+        this.selectionListeners.updateAll(Optional.empty());
     }
 
-    public Optional<InitOpModePacket> getSelectedOpMode(){
-        return Optional.ofNullable(this.opmode);
-    }
-
-    public void setSelectionListener(Consumer<Optional<InitOpModePacket>> nListener){
-        this.selectionListener = Optional.ofNullable(nListener);
-    }
-
-    public Optional<Consumer<Optional<InitOpModePacket>>> getSelectionListener() {
-        return selectionListener;
+    public Publisher<Optional<InitOpModePacket>> getSelectionListeners() {
+        return this.selectionListeners;
     }
 
     public DSOpModeListManager getModel() {
