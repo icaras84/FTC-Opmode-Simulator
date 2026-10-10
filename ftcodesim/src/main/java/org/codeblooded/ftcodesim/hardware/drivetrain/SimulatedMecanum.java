@@ -57,19 +57,8 @@ public class SimulatedMecanum extends SimulatedDrivetrain {
 //        // TODO add lag button to distrupt path or apply forces
 
         double kCoulombFriction3 = config.turnNaturalDeceleration;
-        double backEMF3 = config.maxTurnAccel / config.maxAngularVelocity;
-        double kA3 = (backEMF3 * (config.maxAngularVelocity) + kCoulombFriction3) / config.nominalVoltage;
-        double[] headingCoefficients = new double[]{
-                kA3, backEMF3, 0, 0, 0
-        };
-
-        MotorModel model = new MotorModel(
-                (v, d, b) -> d * b,
-                (v, d, b) -> Math.signum(v) == Math.signum(d) ? -v * Math.abs(d) : 0, // back-emf
-                (v, d, b) -> Math.signum(v) != Math.signum(d) && d != 0 ? -v : 0,  // regenerative braking, not dependent on duty bc max braking is way stronger than max accel
-                (v, d, b) -> d == 0 ? -v : 0,  // short circuiting brake mode
-                (v, d, b) -> -Math.signum(v)
-        );
+        double backEMF2 = config.maxTurnAccel / config.maxAngularVelocity;
+        double kA2 = (backEMF2 * (config.maxAngularVelocity) + kCoulombFriction3) / config.nominalVoltage;
 
         // does not account for when motors are randomly opposing each-other, does not account for slippage
 
@@ -83,10 +72,9 @@ public class SimulatedMecanum extends SimulatedDrivetrain {
         double kA = (backEMF * (maxVelocity) + decel) / config.nominalVoltage;
 
         robotAccel = new MotionVector(
-                kA * voltageSensor.getVoltage() * motorEffort.x - backEMF * Math.abs(motorEffort.x) * robotVel.x, //model.predict(coefficients, robotVel.x, motorEffort.x, voltage),
-                kA * voltageSensor.getVoltage() * motorEffort.y - backEMF * Math.abs(motorEffort.y) * robotVel.y, //model.predict(coefficients, robotVel.y, motorEffort.y, voltage),
-                //model.predict(coefficients, robotVel.y, motorEffort.y, voltage),
-                model.predict(headingCoefficients, robotVel.theta, motorEffort.theta, voltage)
+                kA * voltage * motorEffort.x - backEMF * Math.abs(motorEffort.x) * robotVel.x,
+                kA * voltage * motorEffort.y - backEMF * Math.abs(motorEffort.y) * robotVel.y,
+                kA2 * voltage * motorEffort.theta - backEMF2 * Math.abs(motorEffort.theta) * robotVel.theta
         );
 
         boolean isStationary =
@@ -102,7 +90,7 @@ public class SimulatedMecanum extends SimulatedDrivetrain {
             robotAccel = new MotionVector(0, 0, 0);
         } else {
             robotAccel.x -= decel * Math.signum(robotVel.x);
-            robotAccel.y -= decel* Math.signum(robotVel.y);
+            robotAccel.y -= decel * Math.signum(robotVel.y);
             robotAccel.theta -= config.turnNaturalDeceleration * Math.signum(robotVel.theta);
 
             if (Math.signum(robotVel.x) != Math.signum(robotAccel.x) || robotAccel.x == 0)
