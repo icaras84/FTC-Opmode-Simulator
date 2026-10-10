@@ -71,6 +71,8 @@ public class SimulatedMecanum extends SimulatedDrivetrain {
                 (v, d, b) -> -Math.signum(v)
         );
 
+        // does not account for when motors are randomly opposing each-other, does not account for slippage
+
         double voltage = voltageSensor.getVoltage();
 
         double direction = Math.atan2(robotVel.y, robotVel.x);
@@ -80,13 +82,10 @@ public class SimulatedMecanum extends SimulatedDrivetrain {
         double backEMF = config.maxAcceleration / maxVelocity;
         double kA = (backEMF * (maxVelocity) + decel) / config.nominalVoltage;
 
-        double[] coefficients = new double[]{
-                kA, backEMF, 0, 0, 0
-        };
-
         robotAccel = new MotionVector(
-                model.predict(coefficients, robotVel.x, motorEffort.x, voltage),
-                model.predict(coefficients, robotVel.y, motorEffort.y, voltage),
+                kA * voltageSensor.getVoltage() * motorEffort.x - backEMF * Math.abs(motorEffort.x) * robotVel.x, //model.predict(coefficients, robotVel.x, motorEffort.x, voltage),
+                kA * voltageSensor.getVoltage() * motorEffort.y - backEMF * Math.abs(motorEffort.y) * robotVel.y, //model.predict(coefficients, robotVel.y, motorEffort.y, voltage),
+                //model.predict(coefficients, robotVel.y, motorEffort.y, voltage),
                 model.predict(headingCoefficients, robotVel.theta, motorEffort.theta, voltage)
         );
 
@@ -106,22 +105,22 @@ public class SimulatedMecanum extends SimulatedDrivetrain {
             robotAccel.y -= decel* Math.signum(robotVel.y);
             robotAccel.theta -= config.turnNaturalDeceleration * Math.signum(robotVel.theta);
 
-//            if (Math.signum(robotVel.x) != Math.signum(robotAccel.x) || robotAccel.x == 0)
-//                robotAccel.x -= robotVel.x / (2.0 * config.foresightConfig.quadraticBrakeCoefficients.get().get(0,0) * Math.abs(robotVel.x) + config.foresightConfig.linearBrakeCoefficients.get().get(0,0)) - config.foresightConfig.naturalForwardDeceleration.get() * Math.signum(robotVel.x);
-//
-//            if (Math.signum(robotVel.y) != Math.signum(robotAccel.y) || robotAccel.y == 0)
-//                robotAccel.y -= robotVel.y / (2.0 * config.foresightConfig.quadraticBrakeCoefficients.get().get(1,1) * Math.abs(robotVel.y) + config.foresightConfig.linearBrakeCoefficients.get().get(1,1)) - config.foresightConfig.naturalStrafeDeceleration.get() * Math.signum(robotVel.y);;
+            if (Math.signum(robotVel.x) != Math.signum(robotAccel.x) || robotAccel.x == 0)
+                robotAccel.x -= robotVel.x / (2.0 * config.foresightConfig.quadraticBrakeCoefficients.get().get(0,0) * Math.abs(robotVel.x) + config.foresightConfig.linearBrakeCoefficients.get().get(0,0)) - config.foresightConfig.naturalForwardDeceleration.get() * Math.signum(robotVel.x);
 
-//            if (Math.signum(robotVel.theta) != Math.signum(robotAccel.theta) || robotAccel.theta == 0) {
-//                double theta = robotVel.theta;
-//
-//                double A = config.foresightConfig.headingBrakeCoefficients.get().x();
-//                double B = config.foresightConfig.headingBrakeCoefficients.get().y();
-//
-//                double angularAcceleration =
-//                        -theta / (2.0 * A * Math.abs(theta) + B);
-//                robotAccel.theta += angularAcceleration + config.turnNaturalDeceleration * Math.signum(robotVel.theta);
-//            }
+            if (Math.signum(robotVel.y) != Math.signum(robotAccel.y) || robotAccel.y == 0)
+                robotAccel.y -= robotVel.y / (2.0 * config.foresightConfig.quadraticBrakeCoefficients.get().get(1,1) * Math.abs(robotVel.y) + config.foresightConfig.linearBrakeCoefficients.get().get(1,1)) - config.foresightConfig.naturalStrafeDeceleration.get() * Math.signum(robotVel.y);;
+
+            if (Math.signum(robotVel.theta) != Math.signum(robotAccel.theta) || robotAccel.theta == 0) {
+                double theta = robotVel.theta;
+
+                double A = config.foresightConfig.headingBrakeCoefficients.get().x();
+                double B = config.foresightConfig.headingBrakeCoefficients.get().y();
+
+                double angularAcceleration =
+                        -theta / (2.0 * A * Math.abs(theta) + B);
+                robotAccel.theta += angularAcceleration + config.turnNaturalDeceleration * Math.signum(robotVel.theta);
+            }
         }
 
         robotVel.logV("Mecanum/robot/velocity inches per second");
