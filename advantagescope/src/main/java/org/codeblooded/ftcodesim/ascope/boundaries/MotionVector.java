@@ -50,6 +50,10 @@ public class MotionVector {
         return new MotionVector(x * scalar, y * scalar, theta);
     }
 
+    public MotionVector scale2(double scalar) {
+        return new MotionVector(x * scalar, y * scalar, theta * scalar);
+    }
+
     public double magnitude() {
         return Math.sqrt(x * x + y * y);
     }

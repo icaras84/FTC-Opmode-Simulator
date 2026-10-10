@@ -15,6 +15,7 @@ public class SimMotor implements DcMotorEx, SimHardwareDevice {
 
     public String deviceName;
     public ZeroPowerBehavior zeroPowerBehavior;
+    public Direction direction = Direction.FORWARD;
 
     public SimMotorConfig config;
 
@@ -40,11 +41,6 @@ public class SimMotor implements DcMotorEx, SimHardwareDevice {
         velocity += acceleration * deltaTime;
     }
 
-    public double getTurnForce() {
-        double voltage = config.voltageSensor.getVoltage();
-        return config.motorModel.predict(config.turn, velocity, power, voltage);
-    }
-
     @Override
     public void reset() {
         power = 0;
@@ -62,7 +58,7 @@ public class SimMotor implements DcMotorEx, SimHardwareDevice {
 
     @Override
     public Direction getDirection() {
-        return null;
+        return direction;
     }
 
     public void setPower(double power) {
