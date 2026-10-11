@@ -31,13 +31,12 @@ public class SimulateMecanumBase {
         config.staticFriction = 55;
 
         config.maxAcceleration = 200;
-        config.turnNaturalDeceleration = 2;
-        config.maxTurnAccel = 7;
+        config.turnNaturalDeceleration = 2.5;
+        config.maxTurnAccel = 10;
+        config.maxAngularVelocity = 5;
 
         config.robotGeometry = new RobotGeometry(18, 18, 0, 0);
         config.robotModel = SourceType.ROBOT_MECANUM_BASE;
-//        config.maxAngularVelocity = 5.175;
-        config.maxAngularVelocity = 5;
 
         config.foresightConfig = new ForesightConfig(
                 c -> {
