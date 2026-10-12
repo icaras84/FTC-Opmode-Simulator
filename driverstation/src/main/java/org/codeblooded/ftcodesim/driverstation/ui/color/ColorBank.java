@@ -1,0 +1,16 @@
+package org.codeblooded.ftcodesim.driverstation.ui.color;
+
+import java.awt.*;
+
+public class ColorBank {
+
+    private static final Color GREEN  = new Color(0x4C, 0xAF, 0x50);
+    private static final Color RED    = new Color(0xF4, 0x43, 0x36);
+    private static final Color YELLOW = new Color(0xFF, 0xC1, 0x07);
+    private static final Color BLUE   = new Color(0x21, 0x96, 0xF3);
+
+    public static final Palette PANEL = new Palette(new Color(0x2A, 0x2A, 0x2A), new Color(0x1A, 0x1A, 0x1A), new Color(0x3A, 0x3A, 0x3A), new Color(0x1A, 0x1A, 0x1A));
+    public static final Palette LABEL = new Palette(new Color(0xEE, 0xEE, 0xEE), new Color(0x88, 0x88, 0x88), new Color(0x88, 0x88, 0x88), new Color(0x3A, 0x3A, 0x3A));
+    public static final Palette TELEMETRY = new Palette(new Color(0x2A, 0x2A, 0x2A), new Color(0x12, 0x12, 0x12), ColorBank.GREEN, new Color(0x12, 0x12, 0x12).brighter());
+
+}
