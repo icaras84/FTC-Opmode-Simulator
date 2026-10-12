@@ -15,19 +15,19 @@ public class Palette {
         this.disabled = disabled;
     }
 
-    public Color getPrimary() {
+    public Color getPrimaryColor() {
         return primary;
     }
 
-    public Color getSecondary() {
+    public Color getSecondaryColor() {
         return secondary;
     }
 
-    public Color getAccent() {
+    public Color getAccentColor() {
         return accent;
     }
 
-    public Color getDisabled() {
+    public Color getDisabledColor() {
         return disabled;
     }
 }
