@@ -57,8 +57,6 @@ public class SimulateMecanumBase {
                     c.headingFeedback.set(Controller.proportional(2.447421655157805));
                     c.headingBrakeCoefficients.set(Vector2D.cartesian(0.04730634263294, 0.007540928288975995));
 
-//                    c.linearBrakeCoefficients.set(Matrix.diag(0.038561008825678214, 0.06927454668889409));
-//                    c.quadraticBrakeCoefficients.set(Matrix.diag(0.002985751705369463, 0.0020371201468262264));
                     c.linearBrakeCoefficients.set(Matrix.diag(0.06447, 0.06447));
                     c.quadraticBrakeCoefficients.set(Matrix.diag(0.0024, 0.0024));
 

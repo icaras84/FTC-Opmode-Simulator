@@ -25,7 +25,7 @@ public class OpModeLifecycle {
         this.telemetry = telemetry;
     }
 
-    public void runOpMode() throws InterruptedException {
+    public void runOpMode() {
         opMode.telemetry = telemetry;
         opMode.hardwareMap = simHardwareMap;
         opMode.gamepad1 = new Gamepad();

@@ -70,7 +70,7 @@ public class FTCodeSim {
             while (windowIsRunning()) {
                 readPackets();
                 try {
-                    Thread.sleep(20);
+                    Thread.sleep(config.inputLoopTimeMs);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
