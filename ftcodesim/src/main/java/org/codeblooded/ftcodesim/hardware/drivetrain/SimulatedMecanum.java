@@ -1,6 +1,7 @@
 package org.codeblooded.ftcodesim.hardware.drivetrain;
 
 
+import com.qualcomm.robotcore.hardware.DcMotor;
 import org.codeblooded.ftcodesim.ascope.boundaries.FieldBoundary;
 import org.codeblooded.ftcodesim.ascope.boundaries.MotionVector;
 import org.codeblooded.ftcodesim.hardware.devices.SimMotor;
@@ -36,10 +37,15 @@ public class SimulatedMecanum extends SimulatedDrivetrain {
 
     @Override
     public void update(double deltaTime) {
+        boolean isBrakeMode = false;
         for (int i = 0; i < motors.length; i++) {
             SimMotor motor = motors[i];
             motorAngularAccelerations[i] = motor.getAcceleration();
             motorPowers[i] = motor.getPower();
+
+            if (motor.zeroPowerBehavior == DcMotor.ZeroPowerBehavior.BRAKE) {
+                isBrakeMode = true;
+            }
 
             Logger.recordOutput("Mecanum/wheel/angular vels radians per second/" + motor.deviceName, motor.getVelocity());
             Logger.recordOutput("Mecanum/wheel/powers/" + motor.deviceName, motor.getPower());
@@ -87,18 +93,23 @@ public class SimulatedMecanum extends SimulatedDrivetrain {
             robotVel = new MotionVector(0, 0, 0);
             robotAccel = new MotionVector(0, 0, 0);
         } else {
-            robotAccel.x -= decel * Math.signum(robotVel.x);
-            robotAccel.y -= decel * Math.signum(robotVel.y);
-            robotAccel.theta -= config.turnNaturalDeceleration * Math.signum(robotVel.theta);
+            if (motorEffort.x == 0 ? isBrakeMode : Math.signum(robotVel.x) != Math.signum(motorEffort.x)) {
+                robotAccel.x -= robotVel.x / (2.0 * config.foresightConfig.quadraticBrakeCoefficients.get().get(0,0) * Math.abs(robotVel.x) + config.foresightConfig.linearBrakeCoefficients.get().get(0,0));
+            } else {
+                robotAccel.x -= decel * Math.signum(robotVel.x);
+            }
 
-            if (Math.signum(robotVel.x) != Math.signum(motorEffort.x) || motorEffort.x == 0)
-                robotAccel.x -= robotVel.x / (2.0 * config.foresightConfig.quadraticBrakeCoefficients.get().get(0,0) * Math.abs(robotVel.x) + config.foresightConfig.linearBrakeCoefficients.get().get(0,0)) - decel * Math.signum(robotVel.x);
+            if (motorEffort.y == 0 ? isBrakeMode : Math.signum(robotVel.y) != Math.signum(motorEffort.y)) {
+                robotAccel.y -= robotVel.y / (2.0 * config.foresightConfig.quadraticBrakeCoefficients.get().get(1,1) * Math.abs(robotVel.y) + config.foresightConfig.linearBrakeCoefficients.get().get(1,1));
+            } else {
+                robotAccel.y -= decel * Math.signum(robotVel.y);
+            }
 
-            if (Math.signum(robotVel.y) != Math.signum(motorEffort.y) || motorEffort.y == 0)
-                robotAccel.y -= robotVel.y / (2.0 * config.foresightConfig.quadraticBrakeCoefficients.get().get(1,1) * Math.abs(robotVel.y) + config.foresightConfig.linearBrakeCoefficients.get().get(1,1)) - decel * Math.signum(robotVel.y);
-
-            if (Math.signum(robotVel.theta) != Math.signum(motorEffort.theta) || motorEffort.theta == 0) {
-                robotAccel.theta -= robotVel.theta / (2.0 * config.foresightConfig.headingBrakeCoefficients.get().x() * Math.abs(robotVel.theta) + config.foresightConfig.headingBrakeCoefficients.get().y()) - config.turnNaturalDeceleration * Math.signum(robotVel.theta);
+            if (motorEffort.theta == 0 ? isBrakeMode : Math.signum(robotVel.theta) != Math.signum(motorEffort.theta)) {
+                robotAccel.theta -= robotVel.theta / (2.0 * config.foresightConfig.headingBrakeCoefficients.get().x() * Math.abs(robotVel.theta) + config.foresightConfig.headingBrakeCoefficients.get().y());
+            }
+            else {
+                robotAccel.theta -= config.turnNaturalDeceleration * Math.signum(robotVel.theta);
             }
         }
 
@@ -113,11 +124,12 @@ public class SimulatedMecanum extends SimulatedDrivetrain {
         MotionVector legalPosition = position;
         position = position.step(velocity, deltaTime);
 
-        boolean isOutOfBounds = FieldBoundary.isOutOfBounds(position, config.robotGeometry);
+        boolean isOutOfBounds = FieldBoundary.isOutOfBounds(position, config.robotGeometry, config.field.boundary);
         if (isOutOfBounds) {
             MotionVector normal = FieldBoundary.collisionNormal(
                     position,
-                    config.robotGeometry
+                    config.robotGeometry,
+                    config.field.boundary
             );
 
             double vNormal = velocity.dot(normal);

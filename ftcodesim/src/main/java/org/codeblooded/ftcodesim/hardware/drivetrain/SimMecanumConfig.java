@@ -1,5 +1,8 @@
 package org.codeblooded.ftcodesim.hardware.drivetrain;
 
+import org.codeblooded.ftcodesim.ascope.SeasonField;
+import org.codeblooded.ftcodesim.ascope.boundaries.FieldBoundary;
+
 public class SimMecanumConfig extends SimDrivetrainConfig {
     public String frontLeftMotorName;
     public String frontRightMotorName;
@@ -12,7 +15,7 @@ public class SimMecanumConfig extends SimDrivetrainConfig {
     /** distance from center of backRight wheel to backLeft wheel */
     public double trackWidth;
 
-    public double forwardNaturalDeceleration;
-    public double strafeNaturalDeceleration;
     public double turnNaturalDeceleration;
+
+    public SeasonField field;
 }

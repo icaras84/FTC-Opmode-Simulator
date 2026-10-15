@@ -30,10 +30,13 @@ public class SimulateMecanumBase {
         config.staticVelocityRegion = 4;
         config.staticFriction = 55;
 
+        // TODO Fix 1 minute start up time
+
         config.maxAcceleration = 200;
         config.turnNaturalDeceleration = 2.5;
         config.maxTurnAccel = 10;
         config.maxAngularVelocity = 5;
+        config.field = SeasonField.BIOBUZZ;
 
         config.robotGeometry = new RobotGeometry(18, 18, 0, 0);
         config.robotModel = SourceType.ROBOT_MECANUM_BASE;
@@ -66,29 +69,6 @@ public class SimulateMecanumBase {
                 }
         );
 
-//        c.linearBrakeCoefficients.set(Matrix.diag(0.06447, 0.06447));
-//        c.quadraticBrakeCoefficients.set(Matrix.diag(0.0024, 0.0024));
-//
-//        c.maxAchievableForwardVelocity.set(85.17);
-//        c.maxAchievableStrafeVelocity.set(66.8431);
-//
-//        c.naturalForwardDeceleration.set(49.09);
-//        c.naturalStrafeDeceleration.set(49.09);
-//
-//        c.maxDecelerationConstraint.set(49.09);
-//        c.coast.set(Controller.proportional(0).plus(Controller.proportionalFeedforward(0.015)));
-//
-//        c.forwardTranslational.set(Controller.proportional(0.2));
-//        c.strafeTranslational.set(Controller.proportional(0.2));
-//
-//        c.brake.set(Controller.proportionalFeedforward(0.02));
-//
-//        c.maxBrakingPower.set(0.2);
-//
-//        c.headingFeedback.set(Controller.proportional(2));
-//
-//        c.headingBrakeCoefficients.set(Vector2D.cartesian(0.042, 0.0101));
-
         SimulatedDrivetrain drivetrain = new SimulatedMecanum(config);
 
         SimHardwareMap simHardwareMap = new SimHardwareMap();
@@ -100,7 +80,7 @@ public class SimulateMecanumBase {
         simConfig.gamepad2Keybinds = new DefaultKeybinds();
         simConfig.simHardwareMap = simHardwareMap;
         simConfig.loopTimeMs = 10;
-        simConfig.field = SeasonField.DECODE;
+        simConfig.field = SeasonField.BIOBUZZ;
         simConfig.autoConfigureAscope = true;
 
         FTCodeSim sim = new FTCodeSim(simConfig);

@@ -79,16 +79,6 @@ public class FTCodeSim {
     }
 
     public void run() throws InterruptedException {
-//        new Thread(() -> {
-//            while (windowIsRunning()) {
-//                try {
-//                    simHardwareMap.update();
-//                } catch (NullPointerException e) {
-//
-//                }
-//            }
-//        }, "Physics Sim").start();
-
         while (windowIsRunning()) {
             if (opModeLifecycle == null) {
                 Thread.sleep(config.loopTimeMs);
@@ -104,6 +94,7 @@ public class FTCodeSim {
         return driverStationWindow.isAlive() && advantageScope.isOpen();
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     public void startServer() throws IOException {
         log("Connecting to Fake Driver Station on port " + PORT);
 
@@ -232,40 +223,6 @@ public class FTCodeSim {
         log("Driver Station shutdown.");
     }
 
-//    private static Process startDriverStationProcess() throws IOException {
-//        File projectRoot = findProjectRoot();
-//        File driverStationJar = new File(projectRoot,
-//                "DriverStationWindow/build/libs/DriverStationWindow.jar");
-//
-//        if (!driverStationJar.exists()) {
-//            buildDriverStationJar(projectRoot);
-//        }
-//
-//        String javaExe = findJavaExecutable();
-//        Process process = new ProcessBuilder(
-//                javaExe,
-//                "-jar",
-//                driverStationJar.getAbsolutePath()
-//        )
-//                .directory(projectRoot)
-//                .redirectErrorStream(true)
-//                .start();
-//
-//        new Thread(() -> {
-//            try (BufferedReader reader = new BufferedReader(
-//                    new InputStreamReader(process.getInputStream()))) {
-//
-//                String line;
-//                while ((line = reader.readLine()) != null) {
-//                    System.out.println("[DriverStation CLI] " + line);
-//                }
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//        }).start();
-//        return process;
-//    }
-
     @RequiresApi(api = Build.VERSION_CODES.O)
     private static Process startDriverStationProcess() throws IOException {
         File projectRoot = findProjectRoot();
@@ -326,7 +283,6 @@ public class FTCodeSim {
         File gradlew = new File(projectRoot, isWindows() ? "gradlew.bat" : "gradlew");
         Process buildProcess = new ProcessBuilder(
                 gradlew.getAbsolutePath(),
-//                ":DriverStationWindow:build"
                 ":DriverStationWindow:shadowJar"
         )
                 .directory(projectRoot)
