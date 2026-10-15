@@ -10,6 +10,7 @@ public class SimConfig {
     public SimHardwareMap simHardwareMap;
 
     public long loopTimeMs = 10;
+    public long inputLoopTimeMs = 20;
 
     public Keybinds gamepad1Keybinds = new DefaultKeybinds();
     public Keybinds gamepad2Keybinds = new DefaultKeybinds();

@@ -50,6 +50,10 @@ public class MotionVector {
         return new MotionVector(x * scalar, y * scalar, theta);
     }
 
+    public MotionVector scale2(double scalar) {
+        return new MotionVector(x * scalar, y * scalar, theta * scalar);
+    }
+
     public double magnitude() {
         return Math.sqrt(x * x + y * y);
     }
@@ -100,6 +104,13 @@ public class MotionVector {
     public void log(String key) {
         Logger.recordOutput(key + " Pedro coords (inches)", toWPIPose());
         Logger.recordOutput(key + " ftc coords (m)", toFtcCoords().toWPIPose());
+    }
+
+    public void logV(String key) {
+        Logger.recordOutput(key + " Pedro coords (inches)", toWPIPose());
+        double inchesPerMeter = 39.37;
+        double halfField = 141.5 / 2;
+        Logger.recordOutput(key + " ftc coords (m)", new MotionVector(-(y - halfField) / inchesPerMeter, (x - halfField) / inchesPerMeter, theta).toWPIPose());
     }
 
     public void log(String key, SourceType sourceType) {
