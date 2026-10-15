@@ -30,6 +30,4 @@ dependencies {
 
     implementation("org.psilynx.psikit:core:0.2.0")
     implementation("org.psilynx.psikit:ftc:0.2.0")
-
-    implementation("com.acmerobotics.slothboard:dashboard:0.3.1+0.6.0")
 }
