@@ -1,27 +1,15 @@
 package org.codeblooded.ftcodesim.ascope.boundaries;
 
 public class FieldBoundary {
-    public static final MotionVector[] DECODE_FIELD = { // TODO only use SeasonField.DECODE
-            new MotionVector(0, 0),
-            new MotionVector(0, 68.8),
-            new MotionVector(7.6, 68.8),
-            new MotionVector(7.6, 118.8),
-            new MotionVector(23.4, 141.3),
-            new MotionVector(117.9, 141.3),
-            new MotionVector(133.8, 118.8),
-            new MotionVector(133.8, 68.8),
-            new MotionVector(141.3, 68.8),
-            new MotionVector(141.3, 0)
-    };
-
     public static boolean isOutOfBounds(
             MotionVector pose,
-            RobotGeometry robot
-    ) {
+            RobotGeometry robot,
+                    MotionVector[] boundary
+            ) {
         MotionVector[] corners = robot.corners(pose);
 
         for (MotionVector p : corners) {
-            if (!pointInsidePolygon(p, DECODE_FIELD)) {
+            if (!pointInsidePolygon(p, boundary)) {
                 return true;
             }
         }
@@ -30,9 +18,9 @@ public class FieldBoundary {
             MotionVector a1 = corners[i];
             MotionVector a2 = corners[(i + 1) % 4];
 
-            for (int j = 0; j < DECODE_FIELD.length; j++) {
-                MotionVector b1 = DECODE_FIELD[j];
-                MotionVector b2 = DECODE_FIELD[(j + 1) % DECODE_FIELD.length];
+            for (int j = 0; j < boundary.length; j++) {
+                MotionVector b1 = boundary[j];
+                MotionVector b2 = boundary[(j + 1) % boundary.length];
 
                 if (segmentsIntersect(a1, a2, b1, b2)) {
                     return true;
@@ -45,9 +33,10 @@ public class FieldBoundary {
 
     public static MotionVector collisionNormal(
             MotionVector pose,
-            RobotGeometry robot
+            RobotGeometry robot,
+            MotionVector[] boundary
     ) {
-        if (!isOutOfBounds(pose, robot)) {
+        if (!isOutOfBounds(pose, robot, boundary)) {
             return new MotionVector(0, 0);
         }
 
@@ -58,16 +47,16 @@ public class FieldBoundary {
         double largestPenetration = 0;
 
         for (MotionVector corner : corners) {
-            if (pointInsidePolygon(corner, DECODE_FIELD)) {
+            if (pointInsidePolygon(corner, boundary)) {
                 continue;
             }
 
             double closestDistSq = Double.POSITIVE_INFINITY;
             MotionVector closest = null;
 
-            for (int i = 0; i < DECODE_FIELD.length; i++) {
-                MotionVector a = DECODE_FIELD[i];
-                MotionVector b = DECODE_FIELD[(i + 1) % DECODE_FIELD.length];
+            for (int i = 0; i < boundary.length; i++) {
+                MotionVector a = boundary[i];
+                MotionVector b = boundary[(i + 1) % boundary.length];
 
                 MotionVector p = closestPointOnSegment(corner, a, b);
 
@@ -111,15 +100,16 @@ public class FieldBoundary {
     public static MotionVector closestInBoundsPosition(
             MotionVector previousLegalPose,
             MotionVector desiredPose,
-            RobotGeometry robot
+            RobotGeometry robot,
+            MotionVector[] boundary
     ) {
-        if (!isOutOfBounds(desiredPose, robot)) {
+        if (!isOutOfBounds(desiredPose, robot, boundary)) {
             return desiredPose;
         }
 
-        MotionVector closest = closestInBoundsPosition(desiredPose, robot); // i'm sorry i have two funcs
+        MotionVector closest = closestInBoundsPosition(desiredPose, robot, boundary); // i'm sorry i have two funcs
         // TODO clean up concave collisions
-        if (!isOutOfBounds(closest, robot)) {
+        if (!isOutOfBounds(closest, robot, boundary)) {
             return closest;
         }
 
@@ -131,7 +121,7 @@ public class FieldBoundary {
 
             MotionVector test = interpolate(previousLegalPose, desiredPose, t);
 
-            if (isOutOfBounds(test, robot)) {
+            if (isOutOfBounds(test, robot, boundary)) {
                 high = t;
             } else {
                 low = t;
@@ -173,7 +163,8 @@ public class FieldBoundary {
 
     public static MotionVector closestInBoundsPosition(
             MotionVector pose,
-            RobotGeometry robot
+            RobotGeometry robot,
+            MotionVector[] boundary
     ) {
         double x = pose.x();
         double y = pose.y();
@@ -184,7 +175,7 @@ public class FieldBoundary {
 
             MotionVector robotPose = new MotionVector(x, y, pose.theta());
 
-            if (!isOutOfBounds(robotPose, robot)) {
+            if (!isOutOfBounds(robotPose, robot, boundary)) {
                 return robotPose;
             }
 
@@ -196,17 +187,17 @@ public class FieldBoundary {
 
             for (MotionVector corner : corners) {
 
-                if (pointInsidePolygon(corner, DECODE_FIELD)) {
+                if (pointInsidePolygon(corner, boundary)) {
                     continue;
                 }
 
                 double closestDistSq = Double.POSITIVE_INFINITY;
                 MotionVector closest = null;
 
-                for (int i = 0; i < DECODE_FIELD.length; i++) {
+                for (int i = 0; i < boundary.length; i++) {
 
-                    MotionVector a = DECODE_FIELD[i];
-                    MotionVector b = DECODE_FIELD[(i + 1) % DECODE_FIELD.length];
+                    MotionVector a = boundary[i];
+                    MotionVector b = boundary[(i + 1) % boundary.length];
 
                     MotionVector p = closestPointOnSegment(corner, a, b);
 

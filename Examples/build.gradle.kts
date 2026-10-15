@@ -26,19 +26,10 @@ dependencies {
     testImplementation("org.codeblooded.ftcodesim:ftcodesim")
     testImplementation("org.codeblooded.ftcodesim:driverstation")
 
-    //implementation("com.pedropathing:core:2.1.2")
-   // implementation("com.pedropathing:telemetry:2.1.2")
-   // implementation("com.pedropathing:ftc:2.1.2")
-
-    implementation("com.pedropathing:revhub:3.0.0-SNAPSHOT")
-//    {
-//        exclude group: 'org.aspectj', module: 'aspectjtools'
-//    }
-
-    //implementation("com.acmerobotics.dashboard:dashboard:0.6.0")
+    implementation("com.pedropathing:revhub:3.0.1")
 
     implementation("org.psilynx.psikit:core:0.2.0")
     implementation("org.psilynx.psikit:ftc:0.2.0")
 
-    implementation("com.acmerobotics.slothboard:dashboard:0.2.4+0.5.1")
+    implementation("com.acmerobotics.slothboard:dashboard:0.3.1+0.6.0")
 }

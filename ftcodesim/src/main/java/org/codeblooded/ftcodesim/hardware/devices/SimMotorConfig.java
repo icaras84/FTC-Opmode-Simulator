@@ -20,4 +20,8 @@ public class SimMotorConfig {
         this.staticFriction = staticFriction;
         this.voltageSensor = voltageSensor;
     }
+
+    public static SimMotorConfig empty(String name) {
+        return new SimMotorConfig(name, MotorModel.fromString("a=A"), new double[1], new double[1], 0, 0, new SimVoltageSensor());
+    }
 }

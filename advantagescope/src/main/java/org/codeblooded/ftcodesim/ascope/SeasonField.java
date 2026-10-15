@@ -46,7 +46,13 @@ public enum SeasonField {
             GamePiece.purpleArtifact(122.5, 58.5),
             GamePiece.purpleArtifact(117.5, 35.5),
             GamePiece.purpleArtifact(122.5, 35.5),
-    });
+    }),
+    BIOBUZZ("FTC:2026-2027 Field", new MotionVector[]{
+                new MotionVector(0, 0),
+                new MotionVector(0, 141.3),
+                new MotionVector(141.3, 141.3),
+                new MotionVector(141.3, 0)
+    }, new GamePiece[]{});
 
     public final String ascopeName;
     public final MotionVector[] boundary; // TODO add multiple boundaries for things like submersible

@@ -58,7 +58,7 @@ public class AdvantageScopeRunner extends JsonEditor {
         try {
             window = new ProcessBuilder(exe.getAbsolutePath()).start();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            System.err.println("Failed to start AdvantageScope: " + e.getMessage());
         }
     }
 
@@ -85,28 +85,6 @@ public class AdvantageScopeRunner extends JsonEditor {
             paths.filter(Files::isDirectory)
                     .forEach(path -> copyFolder(path, userAssets));
         }
-    }
-
-    private static Process getAdvantageScopeProcess() {
-        try {
-            Process process = new ProcessBuilder(
-                    "pgrep",
-                    "-f",
-                    "AdvantageScope"
-            ).start();
-
-            try (BufferedReader reader = new BufferedReader(
-                    new InputStreamReader(process.getInputStream()))) {
-
-                if (reader.readLine() != null) {
-                    return process;
-                }
-            }
-
-        } catch (IOException ignored) {
-        }
-
-        return null;
     }
 
     private static boolean isAdvantageScopeRunning() {
