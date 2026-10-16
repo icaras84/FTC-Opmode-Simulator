@@ -2,6 +2,7 @@ package org.codeblooded.ftcodesim.driverstation.model;
 
 import org.codeblooded.ftcodesim.driverstation.connection.packets.InitOpModePacket;
 import org.codeblooded.ftcodesim.driverstation.connection.packets.OpModesPacket;
+import org.codeblooded.ftcodesim.driverstation.misc.Nullable;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -38,35 +39,30 @@ public class DSOpModeListManager {
         this.availableOpModes.clear();
     }
 
-    public void searchAndServe(InitOpModePacket requestedOpMode, Consumer<InitOpModePacket> found, Runnable onElse){
+    public Nullable<InitOpModePacket> searchAndServe(InitOpModePacket requestedOpMode){
         if (this.availableOpModes.contains(requestedOpMode)) {
-            found.accept(this.availableOpModes.get(this.availableOpModes.indexOf(requestedOpMode)));
-            return;
+            return Nullable.of(this.availableOpModes.get(this.availableOpModes.indexOf(requestedOpMode)));
         }
-
-        onElse.run();
+        return Nullable.empty();
     }
 
-    public void searchAndServe(int idx, Consumer<InitOpModePacket> found, Runnable onElse){
+    public Nullable<InitOpModePacket> searchAndServe(int idx){
         if (!(idx < 0 || idx > this.availableOpModes.size() - 1)){
-            found.accept(this.availableOpModes.elementAt(idx));
-            return;
+            return Nullable.of(this.availableOpModes.elementAt(idx));
         }
-
-        onElse.run();
+        return Nullable.empty();
     }
 
-    public void searchAndServe(String group, String name, Consumer<InitOpModePacket> found, Runnable onElse){
+    public Nullable<InitOpModePacket> searchAndServe(String group, String name){
         if ((group != null && name != null) && (!group.isEmpty() && !name.isEmpty())) {
             for (InitOpModePacket opmode : this.availableOpModes) {
                 if (Objects.equals(opmode.group, group) && Objects.equals(opmode.name, name)) {
-                    found.accept(opmode);
-                    return;
+                    return Nullable.of(opmode);
                 }
             }
         }
 
-        onElse.run();
+        return Nullable.empty();
     }
 
     public Vector<InitOpModePacket> getAvailableOpModes(){

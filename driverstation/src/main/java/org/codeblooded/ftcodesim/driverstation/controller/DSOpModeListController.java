@@ -37,15 +37,15 @@ public class DSOpModeListController {
     }
 
     public void searchAndSelect(InitOpModePacket requestedOpMode){
-        this.model.searchAndServe(requestedOpMode, this::onValidOpMode, this::deselectOpMode);
+        this.model.searchAndServe(requestedOpMode).ifPresentOrElse(this::onValidOpMode, this::deselectOpMode);
     }
 
     public void searchAndSelect(int idx){
-        this.model.searchAndServe(idx, this::onValidOpMode, this::deselectOpMode);
+        this.model.searchAndServe(idx).ifPresentOrElse(this::onValidOpMode, this::deselectOpMode);
     }
 
     public void searchAndSelect(String group, String name){
-        this.model.searchAndServe(group, name, this::onValidOpMode, this::deselectOpMode);
+        this.model.searchAndServe(group, name).ifPresentOrElse(this::onValidOpMode, this::deselectOpMode);
     }
 
     private void onValidOpMode(InitOpModePacket opmode){
