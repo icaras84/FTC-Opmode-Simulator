@@ -7,7 +7,6 @@ import org.codeblooded.ftcodesim.driverstation.misc.Nullable;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Vector;
-import java.util.function.Consumer;
 
 /**
  * This class is a wrapper for a vector of OpModes available to the client from the server
