@@ -40,6 +40,7 @@ public class DSOpModeManager {
         }
 
         this.loadedOpMode = opMode;
+        this.opModeLoaded = true;
         this.opModeState = OpModeState.WAIT_FOR_INIT;
         this.opModeStopped = true;
         this.startTimeNano = 0;

@@ -20,12 +20,14 @@ public class DSOpModeController {
     private final DSOpModeManager model;
     private final UIMethods ui;
     private final Publisher<Optional<InitOpModePacket>> loadListeners;
+    private final Publisher<OpModeState> stateListener;
 
     public DSOpModeController(DSOpModeManager model, UIMethods ui) {
         this.model = model;
         this.ui = ui;
         this.ui.hookController(this);
         this.loadListeners = Publisher.empty();
+        this.stateListener = Publisher.empty();
     }
 
     public DSOpModeController(UIMethods ui){
@@ -61,6 +63,7 @@ public class DSOpModeController {
                     this.ui.onOpModeStateChange(OpModeState.WAIT_FOR_INIT);
                     break;
             }
+            DSOpModeController.this.stateListener.updateAll(this.model.getOpModeState());
         }, () -> System.out.println("OpMode not loaded."));
     }
 
@@ -68,6 +71,7 @@ public class DSOpModeController {
         this.model.onOpModeLoaded(() -> {
             this.model.stopOpMode();
             this.ui.onOpModeStateChange(OpModeState.WAIT_FOR_INIT);
+            DSOpModeController.this.stateListener.updateAll(this.model.getOpModeState());
         }, () -> System.out.println("OpMode not loaded."));
     }
 
@@ -81,5 +85,13 @@ public class DSOpModeController {
 
     public DSOpModeController.UIMethods getUI(){
         return this.ui;
+    }
+
+    public Publisher<Optional<InitOpModePacket>> getLoadListeners() {
+        return loadListeners;
+    }
+
+    public Publisher<OpModeState> getStateListener() {
+        return stateListener;
     }
 }
